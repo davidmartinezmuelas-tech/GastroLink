@@ -1,0 +1,6 @@
+[
+  { "id": "b001", "name": "GastroLink Centro", "city": "Madrid" },
+  { "id": "b002", "name": "GastroLink Norte", "city": "Barcelona" },
+  { "id": "b003", "name": "GastroLink Puerto", "city": "Valencia" },
+  { "id": "b004", "name": "GastroLink Sur", "city": "Sevilla" }
+]
