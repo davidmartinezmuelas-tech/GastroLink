@@ -31,6 +31,29 @@ Pasos para ejecutar:
 3. Verificar JDK 17 en la configuración del proyecto.
 4. Ejecutar configuración `app` en modo `debug` sobre emulador/dispositivo.
 
+Ejecución por línea de comandos (opcional):
+
+```bash
+./gradlew test
+./gradlew assembleDebug
+```
+
+Calidad de código local:
+
+```bash
+./gradlew detekt
+```
+
+## Flujo de Pantallas (MVP)
+
+Navegación implementada en Compose Navigation:
+
+1. `BranchScreen`: lista de sucursales.
+2. Al seleccionar sucursal se guarda en estado compartido y se navega a `MenuScreen`.
+3. `MenuScreen`: lista de platos y botón `Anadir` para el carrito; acceso a `CartScreen` desde top bar.
+4. `CartScreen`: ajuste de cantidades con `+` y `-`; si qty llega a 0, el item se elimina; botón hacia `SummaryScreen`.
+5. `SummaryScreen`: totales nutricionales (kcal, proteína, carbs, grasa) + recomendaciones simples.
+
 ## Convención de Commits
 
 Se adopta [Conventional Commits](https://www.conventionalcommits.org/).
@@ -66,6 +89,9 @@ GastroLink/
 │   └── sample_data/
 │       ├── branches.json
 │       └── dishes.json
+├── config/
+│   └── detekt/
+│       └── detekt.yml
 ├── docs/
 │   ├── decisions/
 │   │   └── 0001-architecture.md

@@ -17,14 +17,16 @@ jobs:
         with:
           distribution: temurin
           java-version: "17"
+          cache: gradle
 
-      - name: Ejecutar tests y assembleDebug
-        shell: bash
-        run: |
-          if [ -f "./gradlew" ]; then
-            chmod +x ./gradlew
-            ./gradlew test
-            ./gradlew assembleDebug
-          else
-            echo "enable once gradle wrapper exists"
-          fi
+      - name: Dar permisos a gradlew
+        run: chmod +x ./gradlew
+
+      - name: Analisis estatico (detekt)
+        run: ./gradlew detekt
+
+      - name: Tests unitarios
+        run: ./gradlew test
+
+      - name: Compilar debug
+        run: ./gradlew assembleDebug
