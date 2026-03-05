@@ -21,4 +21,10 @@ class SettingsRepository(private val context: Context) {
             preferences[useAiRecommendationsKey] = enabled
         }
     }
+
+    suspend fun clearAllPreferences() {
+        context.settingsDataStore.edit { preferences ->
+            preferences.clear()
+        }
+    }
 }

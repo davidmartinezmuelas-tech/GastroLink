@@ -20,6 +20,7 @@ val gitSha: String = runCatching {
 }.getOrElse { "unknown" }
 
 val buildTimeUtc: String = DateTimeFormatter.ISO_INSTANT.format(Instant.now())
+val aiProxyTokenDebug: String = System.getenv("AI_PROXY_TOKEN")?.trim().orEmpty()
 
 android {
     namespace = "tech.davidmartinezmuelas.gastrolink"
@@ -34,6 +35,7 @@ android {
         buildConfigField("String", "GIT_SHA", "\"$gitSha\"")
         buildConfigField("String", "BUILD_TIME", "\"$buildTimeUtc\"")
         buildConfigField("String", "AI_BASE_URL", "\"\"")
+        buildConfigField("String", "AI_PROXY_TOKEN", "\"\"")
         buildConfigField("boolean", "AI_ENABLED", "false")
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
@@ -45,6 +47,7 @@ android {
     buildTypes {
         debug {
             buildConfigField("String", "AI_BASE_URL", "\"https://example.com\"")
+            buildConfigField("String", "AI_PROXY_TOKEN", "\"$aiProxyTokenDebug\"")
             buildConfigField("boolean", "AI_ENABLED", "true")
         }
 

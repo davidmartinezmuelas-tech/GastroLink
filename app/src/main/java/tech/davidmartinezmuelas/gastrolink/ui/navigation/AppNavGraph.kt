@@ -20,6 +20,7 @@ import tech.davidmartinezmuelas.gastrolink.ui.screens.MenuScreen
 import tech.davidmartinezmuelas.gastrolink.ui.screens.NutritionModeScreen
 import tech.davidmartinezmuelas.gastrolink.ui.screens.OrderDetailScreen
 import tech.davidmartinezmuelas.gastrolink.ui.screens.OrderHistoryScreen
+import tech.davidmartinezmuelas.gastrolink.ui.screens.PlansScreen
 import tech.davidmartinezmuelas.gastrolink.ui.screens.ProfileScreen
 import tech.davidmartinezmuelas.gastrolink.ui.screens.SettingsScreen
 import tech.davidmartinezmuelas.gastrolink.ui.screens.StartModeScreen
@@ -35,6 +36,7 @@ object AppRoute {
     const val CART = "cart"
     const val SUMMARY = "summary"
     const val SETTINGS = "settings"
+    const val PLANS = "plans"
     const val HISTORY = "history"
     const val DETAIL = "detail"
     const val DETAIL_WITH_ARG = "detail/{orderId}"
@@ -177,15 +179,34 @@ fun AppNavGraph(
         composable(AppRoute.SETTINGS) {
             SettingsScreen(
                 isPremiumDemoEnabled = viewModel.isPremiumModeEnabled(),
+                canUseAiRecommendations = viewModel.canUseAiRecommendations(),
                 nutritionMode = state.nutritionMode,
                 useAiRecommendations = state.useAiRecommendations,
                 buildInfo = BuildInfoProvider.current(),
                 onTogglePremiumDemo = viewModel::setPremiumDemoEnabled,
                 onToggleUseAiRecommendations = viewModel::setUseAiRecommendations,
+                onOpenPlans = { navController.navigate(AppRoute.PLANS) },
+                onExportHistory = viewModel::exportOrderHistory,
+                onDeleteAllData = viewModel::wipeAllLocalData,
                 onOpenHistory = {
                     viewModel.loadOrderHistory()
                     navController.navigate(AppRoute.HISTORY)
                 },
+                onNavigateStart = {
+                    navController.navigate(AppRoute.START_MODE) {
+                        popUpTo(navController.graph.id) { inclusive = true }
+                        launchSingleTop = true
+                    }
+                },
+                onBack = { navController.popBackStack() }
+            )
+        }
+
+        composable(AppRoute.PLANS) {
+            PlansScreen(
+                isPremiumEnabled = viewModel.isPremiumModeEnabled(),
+                isDebugBuild = tech.davidmartinezmuelas.gastrolink.BuildConfig.DEBUG,
+                onActivatePremiumDemo = { viewModel.setPremiumDemoEnabled(true) },
                 onBack = { navController.popBackStack() }
             )
         }
@@ -196,6 +217,7 @@ fun AppNavGraph(
                 errorMessage = state.historyErrorMessage,
                 orders = state.orderHistory,
                 onRefresh = viewModel::loadOrderHistory,
+                onExportHistory = viewModel::exportOrderHistory,
                 onViewDetails = { orderId ->
                     navController.navigate("${AppRoute.DETAIL}/$orderId")
                 },

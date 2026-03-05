@@ -65,4 +65,15 @@ class NutritionStatsCalculatorTest {
 
         assertEquals("d1", mostOrdered)
     }
+
+    @Test
+    fun calculate_withEmptyOrders_returnsZeroesAndNoDish() {
+        val stats = NutritionStatsCalculator.calculate(emptyList(), dishesById)
+
+        assertEquals(0.0, stats.averageCaloriesPerOrder, 0.0001)
+        assertEquals(0.0, stats.averageProtein, 0.0001)
+        assertEquals(0.0, stats.averageCarbs, 0.0001)
+        assertEquals(0.0, stats.averageFat, 0.0001)
+        assertEquals(null, stats.mostOrderedDishId)
+    }
 }

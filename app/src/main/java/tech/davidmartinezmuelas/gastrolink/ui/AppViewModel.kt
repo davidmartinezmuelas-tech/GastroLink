@@ -15,7 +15,11 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import tech.davidmartinezmuelas.gastrolink.BuildConfig
+import tech.davidmartinezmuelas.gastrolink.data.DataStoreEntitlementRepository
+import tech.davidmartinezmuelas.gastrolink.data.EntitlementRepository
 import tech.davidmartinezmuelas.gastrolink.data.LocalJsonRepository
+import tech.davidmartinezmuelas.gastrolink.data.OrderExportRepository
 import tech.davidmartinezmuelas.gastrolink.data.OrderRepository
 import tech.davidmartinezmuelas.gastrolink.data.RepositoryResult
 import tech.davidmartinezmuelas.gastrolink.data.SettingsRepository
@@ -25,12 +29,12 @@ import tech.davidmartinezmuelas.gastrolink.data.local.OrderEntity
 import tech.davidmartinezmuelas.gastrolink.data.local.OrderItemEntity
 import tech.davidmartinezmuelas.gastrolink.data.local.ParticipantEntity
 import tech.davidmartinezmuelas.gastrolink.data.local.ProfileEntity
+import tech.davidmartinezmuelas.gastrolink.domain.EntitlementUseCase
 import tech.davidmartinezmuelas.gastrolink.domain.GetRecommendationUseCase
 import tech.davidmartinezmuelas.gastrolink.domain.NutritionCalculator
 import tech.davidmartinezmuelas.gastrolink.domain.NutritionStatsCalculator
 import tech.davidmartinezmuelas.gastrolink.domain.RecommendationResult
 import tech.davidmartinezmuelas.gastrolink.domain.RecommendationSource
-import tech.davidmartinezmuelas.gastrolink.BuildConfig
 import tech.davidmartinezmuelas.gastrolink.model.ActivityLevel
 import tech.davidmartinezmuelas.gastrolink.model.Branch
 import tech.davidmartinezmuelas.gastrolink.model.CartItem
@@ -87,12 +91,22 @@ data class SummaryUiState(
 class AppViewModel(application: Application) : AndroidViewModel(application) {
 
     private val catalogRepository = LocalJsonRepository(application)
+    private val entitlementRepository: EntitlementRepository = DataStoreEntitlementRepository(application)
+    private val database = GastroLinkDatabase.getInstance(application)
     private val orderRepository = OrderRepository(
-        GastroLinkDatabase.getInstance(application).orderDao()
+        database.orderDao()
+    )
+    private val orderExportRepository = OrderExportRepository()
+    private val entitlementUseCase = EntitlementUseCase(
+        entitlementRepository = entitlementRepository,
+        isAiEnabledByBuild = BuildConfig.AI_ENABLED
     )
     private val settingsRepository = SettingsRepository(application)
     private val getRecommendationUseCase = GetRecommendationUseCase(
-        aiRecommendationService = AiRecommendationServiceImpl(baseUrl = BuildConfig.AI_BASE_URL),
+        aiRecommendationService = AiRecommendationServiceImpl(
+            baseUrl = BuildConfig.AI_BASE_URL,
+            proxyToken = BuildConfig.AI_PROXY_TOKEN
+        ),
         isAiEnabledByBuild = BuildConfig.AI_ENABLED,
         includeDebugInfo = BuildConfig.DEBUG
     )
@@ -128,6 +142,7 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
 
     init {
         loadCatalog()
+        observeEntitlement()
         observeSettings()
         observeRecommendationInputs()
     }
@@ -166,24 +181,113 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
         loadCatalog()
     }
 
+    suspend fun wipeAllLocalData(): DataWipeResult {
+        return runCatching {
+            val currentState = _uiState.value
+            database.clearAllTables()
+            settingsRepository.clearAllPreferences()
+
+            _uiState.update {
+                AppUiState(
+                    isLoading = false,
+                    branches = currentState.branches,
+                    dishes = currentState.dishes,
+                    selectedBranch = currentState.branches.firstOrNull()
+                )
+            }
+            DataWipeResult(success = true, message = "Datos eliminados")
+        }.getOrElse {
+            DataWipeResult(success = false, message = "No se pudieron eliminar los datos")
+        }
+    }
+
+    suspend fun exportOrderHistory(format: HistoryExportFormat): HistoryExportResult {
+        return runCatching {
+            val orders = orderRepository.getOrders()
+            if (orders.isEmpty()) {
+                return HistoryExportResult.EmptyHistory
+            }
+
+            val state = _uiState.value
+            val dishesById = state.dishes.associateBy { it.id }
+            val branchesById = state.branches.associateBy { it.id }
+
+            val content = when (format) {
+                HistoryExportFormat.JSON -> {
+                    orderExportRepository.exportOrdersToJson(
+                        ordersWithItems = orders,
+                        dishesById = dishesById,
+                        branchesById = branchesById
+                    )
+                }
+
+                HistoryExportFormat.CSV -> {
+                    orderExportRepository.exportOrdersToCsv(
+                        ordersWithItems = orders,
+                        dishesById = dishesById,
+                        branchesById = branchesById
+                    )
+                }
+            }
+
+            val payload = when (format) {
+                HistoryExportFormat.JSON -> HistoryExportPayload(
+                    fileName = "orders_export.json",
+                    mimeType = "application/json",
+                    content = content
+                )
+
+                HistoryExportFormat.CSV -> HistoryExportPayload(
+                    fileName = "orders_export.csv",
+                    mimeType = "text/csv",
+                    content = content
+                )
+            }
+
+            HistoryExportResult.Success(payload)
+        }.getOrElse {
+            HistoryExportResult.Error
+        }
+    }
+
     fun isPremiumModeEnabled(): Boolean = _uiState.value.entitlement == Entitlement.PREMIUM_DEMO
+    fun isPremiumModeEnabled(): Boolean {
+        return entitlementUseCase.isPremiumEnabled(_uiState.value.entitlement)
+    }
+
+    fun canUseAiRecommendations(): Boolean {
+        return entitlementUseCase.canUseAiRecommendations(_uiState.value.entitlement)
+    }
 
     fun setPremiumDemoEnabled(enabled: Boolean) {
-        _uiState.update {
-            it.copy(
-                entitlement = if (enabled) Entitlement.PREMIUM_DEMO else Entitlement.FREE,
-                nutritionMode = if (!enabled && it.nutritionMode == NutritionMode.WITH_PROFILE) {
+        val entitlement = if (enabled) Entitlement.PREMIUM_DEMO else Entitlement.FREE
+        val canUseAi = entitlementUseCase.canUseAiRecommendations(entitlement)
+        _uiState.update { current ->
+            current.copy(
+                entitlement = entitlement,
+                nutritionMode = if (!entitlementUseCase.canUseNutritionWithProfile(entitlement) &&
+                    current.nutritionMode == NutritionMode.WITH_PROFILE
+                ) {
                     NutritionMode.WITHOUT_PROFILE
                 } else {
-                    it.nutritionMode
-                }
+                    current.nutritionMode
+                },
+                useAiRecommendations = current.useAiRecommendations && canUseAi
             )
+        }
+
+        viewModelScope.launch {
+            entitlementRepository.setPremiumDemoEnabled(enabled)
+            if (!canUseAi) {
+                settingsRepository.setUseAiRecommendations(false)
+            }
         }
     }
 
     fun setUseAiRecommendations(enabled: Boolean) {
         viewModelScope.launch {
-            settingsRepository.setUseAiRecommendations(enabled)
+            val allowed = entitlementUseCase.canUseAiRecommendations(_uiState.value.entitlement)
+            settingsRepository.setUseAiRecommendations(enabled && allowed)
         }
     }
 
@@ -213,7 +317,8 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
     }
 
     fun chooseNutritionWithProfile(): Boolean {
-        if (!isPremiumModeEnabled()) {
+        val allowed = entitlementUseCase.canUseNutritionWithProfile(_uiState.value.entitlement)
+        if (!allowed) {
             return false
         }
 
@@ -705,6 +810,31 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
         }
     }
 
+    private fun observeEntitlement() {
+        viewModelScope.launch {
+            entitlementRepository.entitlementFlow.collect { entitlement ->
+                val canUseAi = entitlementUseCase.canUseAiRecommendations(entitlement)
+                _uiState.update { current ->
+                    current.copy(
+                        entitlement = entitlement,
+                        nutritionMode = if (!entitlementUseCase.canUseNutritionWithProfile(entitlement) &&
+                            current.nutritionMode == NutritionMode.WITH_PROFILE
+                        ) {
+                            NutritionMode.WITHOUT_PROFILE
+                        } else {
+                            current.nutritionMode
+                        },
+                        useAiRecommendations = current.useAiRecommendations && canUseAi
+                    )
+                }
+
+                if (!canUseAi && _uiState.value.useAiRecommendations) {
+                    settingsRepository.setUseAiRecommendations(false)
+                }
+            }
+        }
+    }
+
     private fun observeRecommendationInputs() {
         viewModelScope.launch {
             _uiState
@@ -748,7 +878,7 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
             }
 
             val shouldTryAi = state.useAiRecommendations &&
-                state.entitlement != Entitlement.FREE &&
+                entitlementUseCase.canUseAiRecommendations(state.entitlement) &&
                 context.nutritionMode == NutritionMode.WITH_PROFILE
 
             if (shouldTryAi) {

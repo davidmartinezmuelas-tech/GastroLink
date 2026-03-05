@@ -57,4 +57,33 @@ class RecommendationEngineLocalTest {
 
         assertEquals(recommendations.distinct().size, recommendations.size)
     }
+
+    @Test
+    fun generateRecommendations_withProfileMode_returnsAtMostTwoMessages() {
+        val totals = NutritionTotals(kcal = 1800, proteinG = 5, carbsG = 250, fatG = 90)
+        val context = RecommendationContext(
+            orderMode = OrderMode.SOLO,
+            nutritionMode = NutritionMode.WITH_PROFILE,
+            userProfile = UserProfile.Solo(SoloNutritionProfile(goal = Goal.MAINTAIN))
+        )
+
+        val recommendations = RecommendationEngineLocal.generateRecommendations(totals, context)
+
+        assertTrue(recommendations.size <= 2)
+    }
+
+    @Test
+    fun generateRecommendations_withSameInputs_isDeterministic() {
+        val totals = NutritionTotals(kcal = 1200, proteinG = 20, carbsG = 160, fatG = 55)
+        val context = RecommendationContext(
+            orderMode = OrderMode.GROUP,
+            nutritionMode = NutritionMode.WITH_PROFILE,
+            userProfile = UserProfile.Solo(SoloNutritionProfile(goal = Goal.GAIN_MUSCLE))
+        )
+
+        val first = RecommendationEngineLocal.generateRecommendations(totals, context)
+        val second = RecommendationEngineLocal.generateRecommendations(totals, context)
+
+        assertEquals(first, second)
+    }
 }

@@ -1,5 +1,6 @@
 # GastroLink
 
+[![Android CI](https://github.com/davidmartinezmuelas-tech/GastroLink/actions/workflows/android.yml/badge.svg)](https://github.com/davidmartinezmuelas-tech/GastroLink/actions/workflows/android.yml)
 [![Build Debug APK](https://github.com/davidmartinezmuelas-tech/GastroLink/actions/workflows/build-debug.yml/badge.svg)](https://github.com/davidmartinezmuelas-tech/GastroLink/actions/workflows/build-debug.yml)
 [![Nightly Debug Release](https://github.com/davidmartinezmuelas-tech/GastroLink/actions/workflows/nightly.yml/badge.svg)](https://github.com/davidmartinezmuelas-tech/GastroLink/actions/workflows/nightly.yml)
 
@@ -47,7 +48,18 @@ Calidad de código local:
 ./gradlew detekt
 ```
 
-## CI/CD de APK
+## CI/CD
+
+Proposito de workflows:
+
+- `android.yml`: CI de calidad (detekt + tests + assembleDebug en cada push/PR).
+- `build-debug.yml`: build manual bajo demanda para descargar APK de debug.
+- `nightly.yml`: distribucion nocturna del APK debug como release `nightly`.
+
+## Privacidad
+
+- Documentacion de privacidad: `docs/privacy.md`
+- La app permite borrar todos los datos locales y exportar historial en JSON/CSV.
 
 ### Build manual (workflow_dispatch)
 

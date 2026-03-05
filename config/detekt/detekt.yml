@@ -4,11 +4,43 @@ build:
 config:
   validation: true
 
+complexity:
+  LongMethod:
+    active: true
+    threshold: 140
+  CyclomaticComplexMethod:
+    active: true
+    threshold: 22
+  TooManyFunctions:
+    active: true
+    thresholdInFiles: 40
+    thresholdInClasses: 35
+    thresholdInInterfaces: 20
+    thresholdInObjects: 25
+    thresholdInEnums: 15
+
+potential-bugs:
+  UnsafeCallOnNullableType:
+    active: true
+
 style:
+  MaxLineLength:
+    active: true
+    maxLineLength: 180
+  WildcardImport:
+    active: true
+  UnusedImports:
+    active: true
   MagicNumber:
     active: false
 
 naming:
+  ClassNaming:
+    active: true
+    classPattern: '[A-Z][a-zA-Z0-9]*'
   FunctionNaming:
     active: true
     functionPattern: '[a-zA-Z][a-zA-Z0-9]*'
+  VariableNaming:
+    active: true
+    variablePattern: '[a-z][A-Za-z0-9]*'

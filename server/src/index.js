@@ -2,12 +2,16 @@ const express = require("express");
 const rateLimit = require("express-rate-limit");
 const OpenAI = require("openai");
 
-const PORT = Number(process.env.PORT || 8080);
+const PORT = Number(process.env.PORT || 3000);
 const MAX_REQUEST_SIZE = process.env.MAX_REQUEST_SIZE || "20kb";
 const RATE_LIMIT_WINDOW_MS = Number(process.env.RATE_LIMIT_WINDOW_MS || 60_000);
 const RATE_LIMIT_MAX_REQUESTS = Number(process.env.RATE_LIMIT_MAX_REQUESTS || 30);
 const OPENAI_MODEL = process.env.OPENAI_MODEL || "gpt-4.1-mini";
 const TRUST_PROXY = (process.env.TRUST_PROXY || "false").toLowerCase() === "true";
+const AI_PROXY_TOKEN = String(process.env.AI_PROXY_TOKEN || "").trim();
+
+const ALLOWED_METHODS = ["GET", "POST", "OPTIONS"];
+const ALLOWED_HEADERS = ["Content-Type", "Authorization", "X-API-KEY"];
 
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY
@@ -20,6 +24,7 @@ if (TRUST_PROXY) {
   app.set("trust proxy", 1);
 }
 
+app.use(createCorsMiddleware());
 app.use(express.json({ limit: MAX_REQUEST_SIZE }));
 
 const limiter = rateLimit({
@@ -27,8 +32,14 @@ const limiter = rateLimit({
   limit: RATE_LIMIT_MAX_REQUESTS,
   standardHeaders: true,
   legacyHeaders: false,
+  statusCode: 429,
   message: {
     error: "Demasiadas solicitudes. Intentalo de nuevo en unos segundos."
+  },
+  handler: (_req, res) => {
+    res.status(429).json({
+      error: "Demasiadas solicitudes. Intentalo de nuevo en unos segundos."
+    });
   }
 });
 
@@ -38,7 +49,7 @@ app.get("/health", (_req, res) => {
   res.status(200).json({ status: "ok" });
 });
 
-app.post("/ai/recommendation", async (req, res) => {
+app.post("/ai/recommendation", requireProxyAuth, async (req, res) => {
   if (!process.env.OPENAI_API_KEY) {
     return res.status(500).json({
       error: "Configuracion incompleta del servicio de IA."
@@ -347,4 +358,94 @@ function toTwoSentences(text) {
     .trim();
 
   return normalized.slice(0, 280);
+}
+
+function requireProxyAuth(req, res, next) {
+  const tokenFromAuthHeader = extractBearerToken(req.headers.authorization);
+  const tokenFromApiKeyHeader = sanitizeText(String(req.headers["x-api-key"] || ""), 200);
+  const providedToken = tokenFromAuthHeader || tokenFromApiKeyHeader;
+
+  if (!AI_PROXY_TOKEN || !providedToken || providedToken !== AI_PROXY_TOKEN) {
+    return res.status(401).json({ error: "No autorizado." });
+  }
+
+  return next();
+}
+
+function extractBearerToken(authorizationHeader) {
+  if (!authorizationHeader || typeof authorizationHeader !== "string") {
+    return "";
+  }
+
+  const [scheme, token] = authorizationHeader.trim().split(/\s+/, 2);
+  if (!scheme || !token || scheme.toLowerCase() !== "bearer") {
+    return "";
+  }
+
+  return sanitizeText(token, 200);
+}
+
+function createCorsMiddleware() {
+  const allowedOrigins = resolveAllowedOrigins();
+
+  return (req, res, next) => {
+    const origin = req.headers.origin;
+
+    if (origin) {
+      if (!isCorsRouteAllowed(req.method, req.path)) {
+        return res.status(403).json({ error: "Ruta no habilitada para CORS." });
+      }
+
+      if (!allowedOrigins.has(origin)) {
+        return res.status(403).json({ error: "Origen no permitido." });
+      }
+
+      res.setHeader("Access-Control-Allow-Origin", origin);
+      res.setHeader("Vary", "Origin");
+      res.setHeader("Access-Control-Allow-Methods", ALLOWED_METHODS.join(", "));
+      res.setHeader("Access-Control-Allow-Headers", ALLOWED_HEADERS.join(", "));
+      res.setHeader("Access-Control-Max-Age", "600");
+    }
+
+    if (req.method === "OPTIONS") {
+      return res.status(204).send();
+    }
+
+    return next();
+  };
+}
+
+function resolveAllowedOrigins() {
+  const configuredOrigins = String(process.env.ALLOWED_ORIGINS || "")
+    .split(",")
+    .map((origin) => origin.trim())
+    .filter(Boolean);
+
+  if (configuredOrigins.length > 0) {
+    return new Set(configuredOrigins);
+  }
+
+  const isDevelopment = (process.env.NODE_ENV || "development") !== "production";
+  if (!isDevelopment) {
+    return new Set();
+  }
+
+  return new Set([
+    "http://localhost:3000",
+    "http://localhost:5173",
+    "http://127.0.0.1:3000",
+    "http://127.0.0.1:5173"
+  ]);
+}
+
+function isCorsRouteAllowed(method, path) {
+  if (path === "/health" && (method === "GET" || method === "OPTIONS")) {
+    return true;
+  }
+
+  if (path === "/ai/recommendation" && (method === "POST" || method === "OPTIONS")) {
+    return true;
+  }
+
+  return false;
 }

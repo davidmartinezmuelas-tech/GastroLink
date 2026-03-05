@@ -4,6 +4,7 @@ import org.junit.Assert.assertEquals
 import org.junit.Test
 import tech.davidmartinezmuelas.gastrolink.model.CartItem
 import tech.davidmartinezmuelas.gastrolink.model.Dish
+import tech.davidmartinezmuelas.gastrolink.model.NutritionTotals
 
 class NutritionCalculatorTest {
 
@@ -64,5 +65,15 @@ class NutritionCalculatorTest {
         assertEquals(20, p2.fatG)
 
         assertEquals(2, totalsByParticipant.size)
+    }
+
+    @Test
+    fun calculateTotals_withEmptyList_returnsZeros() {
+        val totals = NutritionCalculator.calculateTotals(emptyList())
+
+        assertEquals(
+            NutritionTotals(kcal = 0, proteinG = 0, carbsG = 0, fatG = 0),
+            totals
+        )
     }
 }
