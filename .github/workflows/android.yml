@@ -1,4 +1,6 @@
 name: Android CI
+# CI principal de calidad para cada push/PR.
+# Ejecuta analisis estatico, tests y compilacion debug.
 
 on:
   push:

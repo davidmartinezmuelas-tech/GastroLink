@@ -1,4 +1,4 @@
-# ADR 0001: Arquitectura base para MVP
+# ADR 0001: Arquitectura base para MVP y evolucion
 
 ## Estado
 
@@ -23,21 +23,27 @@ Motivación:
 - La separación `ui/domain/data` reduce acoplamiento y permite evolucionar la infraestructura sin romper la lógica de negocio.
 - Facilita pruebas unitarias en `domain` y pruebas de integración en `data`.
 
-## Estrategia Offline-First inicial
+## Estrategia Offline-First
 
-Primera etapa:
+Estado actual:
 
-- Carga de datos mock desde `assets/sample_data`.
-- Repositorios con contratos estables para que la fuente de datos sea intercambiable.
+- Carga de catalogo local desde `assets/sample_data`.
+- Persistencia local con Room para historial, detalle y estadisticas.
+- DataStore para ajustes ligeros (por ejemplo, flags de experiencia).
 
-Evolución prevista:
+Motivacion de incluir Room:
 
-- Incorporar Room para cache persistente y soporte offline robusto.
-- Definir sincronización cuando exista backend (lectura local + actualización diferida).
+- Necesidad de mantener trazabilidad local de pedidos.
+- Necesidad de calculo de estadisticas historicas sin dependencia de red.
+
+Evolucion prevista:
+
+- Cuando exista backend, mantener Room como cache local y fuente offline.
+- Incorporar sincronizacion por repositorio (local-first con reconciliacion diferida).
 
 ## Evolución hacia Backend e IA
 
-Cuando el MVP esté estable:
+Cuando el producto avance a fase conectada:
 
 - Backend: se añadirá una fuente remota en `data` (API REST/GraphQL) manteniendo intactos los casos de uso de `domain`.
 - IA: se integrará como servicio adicional para recomendaciones (por perfil nutricional, historial o contexto), consumido por casos de uso específicos en `domain`.

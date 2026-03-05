@@ -1,4 +1,5 @@
 name: Build Debug APK
+# Build manual bajo demanda para generar artifact APK debug.
 
 on:
   workflow_dispatch:

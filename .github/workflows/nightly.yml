@@ -1,4 +1,5 @@
 name: Nightly Debug Release
+# Publicacion nocturna del APK debug en el release estable nightly.
 
 on:
   schedule:

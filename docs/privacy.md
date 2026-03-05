@@ -54,3 +54,12 @@ Formato de exportacion:
 - CSV: una fila por plato, incluyendo columnas de contexto del pedido.
 
 El archivo se comparte mediante selector de apps del sistema (Drive, correo, mensajeria, etc.).
+
+## Nota de terminologia
+
+En interfaz de usuario se usan los terminos `Sin datos` y `Con datos`.
+En implementacion interna pueden aparecer identificadores tecnicos como `WITHOUT_PROFILE` y `WITH_PROFILE`.
+
+## Aviso
+
+La informacion nutricional y las recomendaciones de GastroLink son orientativas y no sustituyen consejo medico profesional.

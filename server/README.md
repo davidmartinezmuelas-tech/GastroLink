@@ -66,12 +66,20 @@ Respuesta:
 }
 ```
 
+Prueba rapida:
+
+```bash
+curl -X GET "http://localhost:3000/health"
+```
+
 ### POST /ai/recommendation
 
 Headers requeridos:
 
 - `Content-Type: application/json`
 - `Authorization: Bearer <AI_PROXY_TOKEN>` o `X-API-KEY: <AI_PROXY_TOKEN>`
+
+Si el token falta o es incorrecto, el proxy responde `401` con mensaje generico.
 
 Request de ejemplo:
 

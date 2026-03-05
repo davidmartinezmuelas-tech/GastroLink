@@ -4,170 +4,176 @@
 [![Build Debug APK](https://github.com/davidmartinezmuelas-tech/GastroLink/actions/workflows/build-debug.yml/badge.svg)](https://github.com/davidmartinezmuelas-tech/GastroLink/actions/workflows/build-debug.yml)
 [![Nightly Debug Release](https://github.com/davidmartinezmuelas-tech/GastroLink/actions/workflows/nightly.yml/badge.svg)](https://github.com/davidmartinezmuelas-tech/GastroLink/actions/workflows/nightly.yml)
 
-Aplicación Android (Kotlin) enfocada en una experiencia de pedido guiada por datos nutricionales.
-El MVP permite seleccionar sucursal, explorar menú, gestionar carrito y visualizar un resumen nutricional antes de confirmar.
+GastroLink es una app Android (Kotlin + Compose) para pedidos de comida con apoyo nutricional, diseñada para operar en modo local con flujo guiado y preparada para evolucionar a servicios remotos.
 
-## MVP
+## Estado actual del proyecto
 
-Funcionalidades iniciales planificadas:
+Funcionalidades implementadas hoy:
 
-- Selección de sucursal.
-- Listado de menú por sucursal.
-- Carrito con altas, bajas y ajuste de cantidades.
-- Resumen nutricional acumulado del carrito (kcal, proteínas, carbohidratos y grasas).
+- Modos de pedido: `Solitario` y `Grupo`.
+- Modos nutricionales: `Sin datos` y `Con datos` (habilitado por premium demo).
+- Perfiles nutricionales:
+	- Solitario: perfil completo.
+	- Grupo: perfil ligero por participante.
+- Carrito por participante en modo grupo.
+- Recomendaciones nutricionales:
+	- Reglas locales.
+	- Opcion IA (beta) via proxy, con fallback local automatico.
+- Persistencia con Room:
+	- Confirmacion de pedido.
+	- Historial.
+	- Detalle de pedido.
+	- Estadisticas nutricionales.
+- Entitlements Free/Premium Demo centralizados.
+- Privacidad y control de datos:
+	- Borrado de datos locales.
+	- Exportacion de historial en JSON/CSV.
+- CI/CD:
+	- CI principal en push/PR.
+	- Build manual de APK debug.
+	- Release nightly de APK debug.
 
-## Stack Tecnológico
+## Flujo real de pantallas
 
-- Android nativo.
-- Kotlin.
-- Jetpack Compose (recomendado para UI declarativa).
-- MVVM + separación `ui/domain/data` (Clean-ish).
-- Room (opcional en fase inicial, previsto para persistencia local).
+Flujo base desde el arranque:
 
-## Cómo Ejecutar (Android Studio)
+1. `StartModeScreen`.
+2. `NutritionModeScreen`.
+3. `ProfileScreen` (si aplica modo con datos).
+4. `BranchScreen`.
+5. `MenuScreen`.
+6. `CartScreen`.
+7. `SummaryScreen`.
 
-Estado actual del repositorio: proyecto Android creado con módulo único `:app`, Kotlin, Compose y Gradle Kotlin DSL.
+Pantallas transversales:
 
-Pasos para ejecutar:
+- `SettingsScreen`.
+- `PlansScreen`.
+- `OrderHistoryScreen`.
+- `OrderDetailScreen`.
+- `StatsScreen`.
 
-1. Abrir Android Studio y seleccionar `Open` sobre este repositorio.
-2. Esperar a la sincronización de Gradle (se usará `gradlew`).
-3. Verificar JDK 17 en la configuración del proyecto.
-4. Ejecutar configuración `app` en modo `debug` sobre emulador/dispositivo.
+## Probar la app
 
-Ejecución por línea de comandos (opcional):
+### Sin Android Studio (APK nightly)
 
-```bash
-./gradlew test
-./gradlew assembleDebug
-```
-
-Calidad de código local:
-
-```bash
-./gradlew detekt
-```
-
-## CI/CD
-
-Proposito de workflows:
-
-- `android.yml`: CI de calidad (detekt + tests + assembleDebug en cada push/PR).
-- `build-debug.yml`: build manual bajo demanda para descargar APK de debug.
-- `nightly.yml`: distribucion nocturna del APK debug como release `nightly`.
-
-## Privacidad
-
-- Documentacion de privacidad: `docs/privacy.md`
-- La app permite borrar todos los datos locales y exportar historial en JSON/CSV.
-
-### Build manual (workflow_dispatch)
-
-Workflow: `Build Debug APK` (`.github/workflows/build-debug.yml`).
-
-Pasos para lanzarlo manualmente en GitHub:
-
-1. Ir a `Actions` en el repositorio.
-2. Seleccionar workflow `Build Debug APK`.
-3. Pulsar `Run workflow`.
-4. Descargar el artifact `app-debug-apk` al finalizar.
-
-### Nightly release (programado + manual)
-
-Workflow: `Nightly Debug Release` (`.github/workflows/nightly.yml`).
-
-- Se ejecuta diariamente y tambien se puede lanzar con `Run workflow`.
-- Publica/actualiza siempre el Release con tag `nightly`.
-- El APK debug (`app-debug.apk`) se reemplaza en cada ejecucion.
-
-Enlace estable del release nightly:
+Puedes descargar la build nightly desde:
 
 - `https://github.com/davidmartinezmuelas-tech/GastroLink/releases/tag/nightly`
 
-QR para descarga nightly:
+Guia rapida de QR:
 
-- Ver `docs/QR.md`.
+- `docs/QR.md`
 
-## Flujo de Pantallas (MVP)
+### Con Android Studio
 
-Navegación implementada en Compose Navigation:
+1. Clonar el repositorio.
+2. Abrir el proyecto en Android Studio.
+3. Usar JDK 17.
+4. Sincronizar Gradle.
+5. Ejecutar `app` en `debug`.
 
-1. `BranchScreen`: lista de sucursales.
-2. Al seleccionar sucursal se guarda en estado compartido y se navega a `MenuScreen`.
-3. `MenuScreen`: lista de platos y botón `Anadir` para el carrito; acceso a `CartScreen` desde top bar.
-4. `CartScreen`: ajuste de cantidades con `+` y `-`; si qty llega a 0, el item se elimina; botón hacia `SummaryScreen`.
-5. `SummaryScreen`: totales nutricionales (kcal, proteína, carbs, grasa) + recomendaciones simples.
+Comandos utiles en local:
 
-## Convención de Commits
-
-Se adopta [Conventional Commits](https://www.conventionalcommits.org/).
-
-Formato:
-
-```text
-<tipo>(<scope opcional>): <descripción corta>
+```bash
+./gradlew detekt
+./gradlew test
+./gradlew :app:assembleDebug
 ```
 
-Ejemplos:
+## IA (demo) con proxy
 
-- `feat(menu): mostrar listado de platos por sucursal`
-- `feat(cart): calcular macros totales del carrito`
-- `fix(branch): corregir filtro por ciudad`
-- `docs(readme): añadir roadmap de iteraciones`
-- `chore(ci): preparar workflow android`
+La app no llama directamente a OpenAI. Usa un proxy en `server/`.
 
-## Estructura del Repositorio
+Pasos:
+
+1. Levantar proxy:
+
+```bash
+cd server
+npm i
+npm run dev
+```
+
+2. Configurar variables del proxy (`server/.env.example` como base):
+
+- `OPENAI_API_KEY`
+- `AI_PROXY_TOKEN`
+- `ALLOWED_ORIGINS`
+- `PORT`
+
+3. Configurar app en debug/demo:
+
+- `AI_BASE_URL` via `BuildConfig` (debug).
+- `AI_PROXY_TOKEN` via entorno de build debug (`AI_PROXY_TOKEN`).
+- No incluir secretos reales en `release`.
+
+Comportamiento ante fallo IA:
+
+- Se aplica fallback automatico a reglas locales.
+
+## Workflows
+
+| Workflow | Archivo | Disparador | Proposito |
+| --- | --- | --- | --- |
+| Android CI | `.github/workflows/android.yml` | `push`, `pull_request` | CI principal: detekt + test + assembleDebug |
+| Build Debug APK | `.github/workflows/build-debug.yml` | `workflow_dispatch` | Build manual y artifact descargable |
+| Nightly Debug Release | `.github/workflows/nightly.yml` | `schedule`, `workflow_dispatch` | Publicacion/actualizacion del release `nightly` |
+
+## Privacidad y datos
+
+- Documentacion: `docs/privacy.md`
+- La app guarda datos locales en Room y DataStore para funcionalidad offline.
+- El envio a IA se hace por proxy y con datos minimos.
+
+## Estructura del repositorio
 
 ```text
 GastroLink/
-├── .github/
-│   └── workflows/
-│       └── android.yml
+├── .github/workflows/
+│   ├── android.yml
+│   ├── build-debug.yml
+│   └── nightly.yml
 ├── app/
 │   ├── build.gradle.kts
 │   └── src/main/
 │       ├── AndroidManifest.xml
 │       ├── java/tech/davidmartinezmuelas/gastrolink/
-│       └── res/values/
-├── assets/
-│   └── sample_data/
-│       ├── branches.json
-│       └── dishes.json
-├── config/
-│   └── detekt/
-│       └── detekt.yml
+│       │   ├── data/
+│       │   ├── domain/
+│       │   ├── model/
+│       │   └── ui/
+│       └── res/
+├── config/detekt/detekt.yml
 ├── docs/
 │   ├── decisions/
-│   │   └── 0001-architecture.md
-│   ├── diagrams/
-│   │   └── .gitkeep
-│   └── screenshots/
-│       └── .gitkeep
-├── CONTRIBUTING.md
+│   ├── privacy.md
+│   └── QR.md
+├── server/
+│   ├── src/index.js
+│   ├── README.md
+│   └── .env.example
 ├── build.gradle.kts
 ├── gradle.properties
-├── gradle/wrapper/
-├── gradlew
-├── gradlew.bat
+├── settings.gradle.kts
 └── README.md
 ```
 
-## Roadmap
+## Checklist de release
 
-### Iteración 1
+Antes de una release formal:
 
-- Inicialización del proyecto Android + módulos base (`ui/domain/data`).
-- Flujo de selección de sucursal.
-- Carga de menú desde `assets/sample_data`.
+1. Revisar `versionName` y `versionCode`.
+2. Actualizar changelog/notas.
+3. Verificar CI verde (`android.yml`).
+4. Generar artifact/release (manual o nightly segun caso).
+5. Probar instalacion en dispositivo real.
 
-### Iteración 2
+## FUTURO (roadmap)
 
-- Gestión completa de carrito.
-- Cálculo de resumen nutricional en tiempo real.
-- Pruebas unitarias de casos de uso principales.
+Elementos planificados para fases siguientes:
 
-### Iteración 3
-
-- Persistencia local con Room (offline-first real).
-- Endpoints backend iniciales para menú/sucursales.
-- Preparación para recomendaciones con IA (fase posterior).
+- Sincronizacion multi-dispositivo con backend.
+- Entitlement premium real con Play Billing/backend.
+- Mejoras de recomendacion IA con politicas de privacidad mas avanzadas.
+- Telemetria de calidad (sin datos sensibles) para mejorar UX.
