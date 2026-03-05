@@ -1,9 +1,7 @@
 package tech.davidmartinezmuelas.gastrolink.ui.screens
 
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -20,28 +18,30 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import tech.davidmartinezmuelas.gastrolink.model.Branch
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
+import tech.davidmartinezmuelas.gastrolink.ui.OrderHistoryItemUi
 
 @Composable
-fun BranchScreen(
+fun OrderHistoryScreen(
     isLoading: Boolean,
     errorMessage: String?,
-    branches: List<Branch>,
-    selectedBranchId: String?,
-    onRetry: () -> Unit,
-    onSelectBranch: (Branch) -> Unit,
-    onBack: () -> Unit,
-    onOpenSettings: () -> Unit
+    orders: List<OrderHistoryItemUi>,
+    onRefresh: () -> Unit,
+    onViewDetails: (String) -> Unit,
+    onOpenStats: () -> Unit,
+    onBack: () -> Unit
 ) {
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text(text = "Sucursales") },
+                title = { Text(text = "Historial de pedidos") },
                 navigationIcon = {
                     TextButton(onClick = onBack) { Text(text = "Atras") }
                 },
                 actions = {
-                    TextButton(onClick = onOpenSettings) { Text(text = "Ajustes") }
+                    TextButton(onClick = onOpenStats) { Text(text = "Estadisticas") }
                 }
             )
         }
@@ -55,7 +55,7 @@ fun BranchScreen(
                         .padding(16.dp),
                     verticalArrangement = Arrangement.Center
                 ) {
-                    Text(text = "Cargando sucursales...")
+                    Text(text = "Cargando historial...")
                 }
             }
             !errorMessage.isNullOrBlank() -> {
@@ -67,9 +67,19 @@ fun BranchScreen(
                     verticalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
                     Text(text = errorMessage)
-                    Button(onClick = onRetry) {
-                        Text(text = "Reintentar")
-                    }
+                    Button(onClick = onRefresh) { Text(text = "Reintentar") }
+                }
+            }
+            orders.isEmpty() -> {
+                Column(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(innerPadding)
+                        .padding(16.dp),
+                    verticalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+                    Text(text = "Todavia no hay pedidos guardados")
+                    Button(onClick = onRefresh) { Text(text = "Actualizar") }
                 }
             }
             else -> {
@@ -77,29 +87,33 @@ fun BranchScreen(
                     modifier = Modifier
                         .fillMaxSize()
                         .padding(innerPadding),
-                    contentPadding = PaddingValues(16.dp),
-                    verticalArrangement = Arrangement.spacedBy(12.dp)
+                    verticalArrangement = Arrangement.spacedBy(10.dp)
                 ) {
-                    items(branches, key = { it.id }) { branch ->
+                    items(orders, key = { it.id }) { order ->
                         Card(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .clickable { onSelectBranch(branch) }
+                                .padding(horizontal = 16.dp)
                         ) {
                             Column(
-                                modifier = Modifier.padding(16.dp),
-                                verticalArrangement = Arrangement.spacedBy(4.dp)
+                                modifier = Modifier.padding(12.dp),
+                                verticalArrangement = Arrangement.spacedBy(6.dp)
                             ) {
+                                Text(
+                                    text = formatDate(order.createdAt),
+                                    style = MaterialTheme.typography.titleSmall
+                                )
+                                Text(text = "Sucursal: ${order.branchName}")
+                                Text(text = "Platos: ${order.dishCount}")
+                                Text(text = "kcal totales: ${order.totalCalories}")
                                 Row(
                                     modifier = Modifier.fillMaxWidth(),
-                                    horizontalArrangement = Arrangement.SpaceBetween
+                                    horizontalArrangement = Arrangement.End
                                 ) {
-                                    Text(text = branch.name, style = MaterialTheme.typography.titleMedium)
-                                    if (branch.id == selectedBranchId) {
-                                        Text(text = "Seleccionada")
+                                    Button(onClick = { onViewDetails(order.id) }) {
+                                        Text(text = "Ver detalles")
                                     }
                                 }
-                                Text(text = branch.city, style = MaterialTheme.typography.bodyMedium)
                             }
                         }
                     }
@@ -107,4 +121,9 @@ fun BranchScreen(
             }
         }
     }
+}
+
+private fun formatDate(timestamp: Long): String {
+    val formatter = SimpleDateFormat("dd/MM/yyyy HH:mm", Locale.getDefault())
+    return formatter.format(Date(timestamp))
 }

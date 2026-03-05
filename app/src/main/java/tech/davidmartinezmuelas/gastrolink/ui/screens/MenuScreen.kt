@@ -3,6 +3,7 @@ package tech.davidmartinezmuelas.gastrolink.ui.screens
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -19,14 +20,21 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import tech.davidmartinezmuelas.gastrolink.model.Dish
+import tech.davidmartinezmuelas.gastrolink.model.OrderMode
+import tech.davidmartinezmuelas.gastrolink.model.Participant
 
 @Composable
 fun MenuScreen(
+    orderMode: OrderMode?,
     selectedBranchName: String?,
     dishes: List<Dish>,
-    onAddDish: (Dish) -> Unit,
+    participants: List<Participant>,
+    selectedParticipantId: String?,
+    onSelectParticipant: (String) -> Unit,
+    onAddDish: (Dish, String?) -> Unit,
     onGoToCart: () -> Unit,
-    onBack: () -> Unit
+    onBack: () -> Unit,
+    onOpenSettings: () -> Unit
 ) {
     Scaffold(
         topBar = {
@@ -41,6 +49,9 @@ fun MenuScreen(
                     TextButton(onClick = onGoToCart) {
                         Text(text = "Carrito")
                     }
+                    TextButton(onClick = onOpenSettings) {
+                        Text(text = "Ajustes")
+                    }
                 }
             )
         }
@@ -52,6 +63,32 @@ fun MenuScreen(
             contentPadding = PaddingValues(16.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
+            if (orderMode == OrderMode.GROUP && participants.isNotEmpty()) {
+                item {
+                    Card(modifier = Modifier.fillMaxWidth()) {
+                        Column(
+                            modifier = Modifier.padding(12.dp),
+                            verticalArrangement = Arrangement.spacedBy(8.dp)
+                        ) {
+                            Text(text = "Asignar platos a", style = MaterialTheme.typography.titleMedium)
+                            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                                participants.forEach { participant ->
+                                    Button(onClick = { onSelectParticipant(participant.id) }) {
+                                        Text(
+                                            text = if (participant.id == selectedParticipantId) {
+                                                "${participant.name} *"
+                                            } else {
+                                                participant.name
+                                            }
+                                        )
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
             items(dishes, key = { it.id }) { dish ->
                 Card(modifier = Modifier.fillMaxWidth()) {
                     Column(
@@ -63,7 +100,7 @@ fun MenuScreen(
                             text = "${dish.kcal} kcal | P ${dish.proteinG}g | C ${dish.carbsG}g | G ${dish.fatG}g",
                             style = MaterialTheme.typography.bodyMedium
                         )
-                        Button(onClick = { onAddDish(dish) }) {
+                        Button(onClick = { onAddDish(dish, selectedParticipantId) }) {
                             Text(text = "Anadir")
                         }
                     }

@@ -1,0 +1,73 @@
+name: Nightly Debug Release
+
+on:
+  schedule:
+    - cron: "0 2 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  nightly-release:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Java 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+          cache: gradle
+
+      - name: Setup Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: Accept Android SDK licenses
+        run: yes | sdkmanager --licenses
+
+      - name: Install Android SDK packages
+        run: |
+          sdkmanager --install "platform-tools" "platforms;android-35" "build-tools;35.0.0"
+
+      - name: Make gradlew executable
+        run: chmod +x ./gradlew
+
+      - name: Assemble debug APK
+        run: ./gradlew :app:assembleDebug
+
+      - name: Generate release notes
+        run: |
+          BUILD_TIME_UTC=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
+          COMMIT_SHA="${GITHUB_SHA}"
+          COMMIT_SHORT="${COMMIT_SHA:0:7}"
+          COMMIT_URL="${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/commit/${COMMIT_SHA}"
+          NIGHTLY_URL="${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/releases/tag/nightly"
+
+          cat > RELEASE_BODY.md <<EOF
+          Build nocturno de GastroLink.
+
+          - Fecha/hora (UTC): ${BUILD_TIME_UTC}
+          - Commit: ${COMMIT_SHORT}
+          - Enlace al commit: ${COMMIT_URL}
+          - Descarga estable nightly: ${NIGHTLY_URL}
+
+          Instalacion rapida:
+          1. Descarga el archivo app-debug.apk desde este release.
+          2. Instala en Android habilitando instalaciones desde origenes desconocidos si procede.
+          EOF
+
+      - name: Publish or update nightly release
+        uses: ncipollo/release-action@v1
+        with:
+          tag: nightly
+          name: nightly
+          bodyFile: RELEASE_BODY.md
+          artifacts: app/build/outputs/apk/debug/app-debug.apk
+          artifactErrorsFailBuild: true
+          allowUpdates: true
+          replacesArtifacts: true
+          makeLatest: true

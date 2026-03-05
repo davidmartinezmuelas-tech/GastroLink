@@ -1,5 +1,8 @@
 # GastroLink
 
+[![Build Debug APK](https://github.com/davidmartinezmuelas-tech/GastroLink/actions/workflows/build-debug.yml/badge.svg)](https://github.com/davidmartinezmuelas-tech/GastroLink/actions/workflows/build-debug.yml)
+[![Nightly Debug Release](https://github.com/davidmartinezmuelas-tech/GastroLink/actions/workflows/nightly.yml/badge.svg)](https://github.com/davidmartinezmuelas-tech/GastroLink/actions/workflows/nightly.yml)
+
 Aplicación Android (Kotlin) enfocada en una experiencia de pedido guiada por datos nutricionales.
 El MVP permite seleccionar sucursal, explorar menú, gestionar carrito y visualizar un resumen nutricional antes de confirmar.
 
@@ -43,6 +46,35 @@ Calidad de código local:
 ```bash
 ./gradlew detekt
 ```
+
+## CI/CD de APK
+
+### Build manual (workflow_dispatch)
+
+Workflow: `Build Debug APK` (`.github/workflows/build-debug.yml`).
+
+Pasos para lanzarlo manualmente en GitHub:
+
+1. Ir a `Actions` en el repositorio.
+2. Seleccionar workflow `Build Debug APK`.
+3. Pulsar `Run workflow`.
+4. Descargar el artifact `app-debug-apk` al finalizar.
+
+### Nightly release (programado + manual)
+
+Workflow: `Nightly Debug Release` (`.github/workflows/nightly.yml`).
+
+- Se ejecuta diariamente y tambien se puede lanzar con `Run workflow`.
+- Publica/actualiza siempre el Release con tag `nightly`.
+- El APK debug (`app-debug.apk`) se reemplaza en cada ejecucion.
+
+Enlace estable del release nightly:
+
+- `https://github.com/davidmartinezmuelas-tech/GastroLink/releases/tag/nightly`
+
+QR para descarga nightly:
+
+- Ver `docs/QR.md`.
 
 ## Flujo de Pantallas (MVP)
 

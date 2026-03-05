@@ -20,15 +20,22 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import tech.davidmartinezmuelas.gastrolink.model.CartItem
+import tech.davidmartinezmuelas.gastrolink.model.OrderMode
+import tech.davidmartinezmuelas.gastrolink.model.Participant
 
 @Composable
 fun CartScreen(
+    orderMode: OrderMode?,
     items: List<CartItem>,
-    onIncrease: (String) -> Unit,
-    onDecrease: (String) -> Unit,
+    participants: List<Participant>,
+    onIncrease: (String, String?) -> Unit,
+    onDecrease: (String, String?) -> Unit,
     onGoToSummary: () -> Unit,
-    onBack: () -> Unit
+    onBack: () -> Unit,
+    onOpenSettings: () -> Unit
 ) {
+    val participantNames = participants.associateBy({ it.id }, { it.name })
+
     Scaffold(
         topBar = {
             TopAppBar(
@@ -36,6 +43,11 @@ fun CartScreen(
                 navigationIcon = {
                     TextButton(onClick = onBack) {
                         Text(text = "Atras")
+                    }
+                },
+                actions = {
+                    TextButton(onClick = onOpenSettings) {
+                        Text(text = "Ajustes")
                     }
                 }
             )
@@ -81,16 +93,22 @@ fun CartScreen(
                             verticalArrangement = Arrangement.spacedBy(8.dp)
                         ) {
                             Text(text = item.dish.name, style = MaterialTheme.typography.titleMedium)
+                            if (orderMode == OrderMode.GROUP && !item.participantId.isNullOrBlank()) {
+                                Text(
+                                    text = "Participante: ${participantNames[item.participantId] ?: item.participantId}",
+                                    style = MaterialTheme.typography.bodyMedium
+                                )
+                            }
                             Row(
                                 modifier = Modifier.fillMaxWidth(),
                                 horizontalArrangement = Arrangement.SpaceBetween
                             ) {
                                 Text(text = "Qty: ${item.qty}")
                                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                                    Button(onClick = { onDecrease(item.dish.id) }) {
+                                    Button(onClick = { onDecrease(item.dish.id, item.participantId) }) {
                                         Text(text = "-")
                                     }
-                                    Button(onClick = { onIncrease(item.dish.id) }) {
+                                    Button(onClick = { onIncrease(item.dish.id, item.participantId) }) {
                                         Text(text = "+")
                                     }
                                 }

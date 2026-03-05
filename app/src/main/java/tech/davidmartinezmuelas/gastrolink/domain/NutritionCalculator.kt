@@ -19,19 +19,10 @@ object NutritionCalculator {
         )
     }
 
-    fun recommendations(totals: NutritionTotals): List<String> {
-        val messages = mutableListOf<String>()
-
-        if (totals.kcal > 900) {
-            messages += "Calorias altas"
-        }
-        if (totals.proteinG < 30) {
-            messages += "Proteina baja"
-        }
-        if (messages.isEmpty()) {
-            messages += "Balance nutricional correcto"
-        }
-
-        return messages.take(2)
+    fun calculateTotalsByParticipant(items: List<CartItem>): Map<String, NutritionTotals> {
+        return items
+            .filter { !it.participantId.isNullOrBlank() }
+            .groupBy { it.participantId.orEmpty() }
+            .mapValues { (_, participantItems) -> calculateTotals(participantItems) }
     }
 }

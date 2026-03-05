@@ -1,8 +1,25 @@
+import java.io.ByteArrayOutputStream
+import java.time.Instant
+import java.time.format.DateTimeFormatter
+
 plugins {
     id("com.android.application")
     id("org.jetbrains.kotlin.android")
+    id("org.jetbrains.kotlin.kapt")
     id("io.gitlab.arturbosch.detekt")
 }
+
+val gitSha: String = runCatching {
+    val stdout = ByteArrayOutputStream()
+    exec {
+        commandLine("git", "rev-parse", "--short=7", "HEAD")
+        standardOutput = stdout
+        isIgnoreExitValue = true
+    }
+    stdout.toString().trim().ifBlank { "unknown" }
+}.getOrElse { "unknown" }
+
+val buildTimeUtc: String = DateTimeFormatter.ISO_INSTANT.format(Instant.now())
 
 android {
     namespace = "tech.davidmartinezmuelas.gastrolink"
@@ -14,6 +31,10 @@ android {
         targetSdk = 35
         versionCode = 1
         versionName = "1.0"
+        buildConfigField("String", "GIT_SHA", "\"$gitSha\"")
+        buildConfigField("String", "BUILD_TIME", "\"$buildTimeUtc\"")
+        buildConfigField("String", "AI_BASE_URL", "\"\"")
+        buildConfigField("boolean", "AI_ENABLED", "false")
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {
@@ -22,6 +43,11 @@ android {
     }
 
     buildTypes {
+        debug {
+            buildConfigField("String", "AI_BASE_URL", "\"https://example.com\"")
+            buildConfigField("boolean", "AI_ENABLED", "true")
+        }
+
         release {
             isMinifyEnabled = false
             proguardFiles(
@@ -42,6 +68,7 @@ android {
 
     buildFeatures {
         compose = true
+        buildConfig = true
     }
 
     composeOptions {
@@ -53,6 +80,10 @@ android {
             excludes += "/META-INF/{AL2.0,LGPL2.1}"
         }
     }
+}
+
+kotlin {
+    jvmToolchain(17)
 }
 
 dependencies {
@@ -69,9 +100,22 @@ dependencies {
     implementation("androidx.compose.ui:ui-tooling-preview")
     implementation("androidx.compose.material3:material3")
     implementation("androidx.navigation:navigation-compose:2.8.0")
+    implementation("androidx.datastore:datastore-preferences:1.1.1")
+    implementation("com.google.code.gson:gson:2.11.0")
+    implementation("androidx.room:room-runtime:2.6.1")
+    implementation("androidx.room:room-ktx:2.6.1")
+    implementation("io.ktor:ktor-client-core:2.3.12")
+    implementation("io.ktor:ktor-client-android:2.3.12")
+    implementation("io.ktor:ktor-client-content-negotiation:2.3.12")
+    implementation("io.ktor:ktor-serialization-gson:2.3.12")
+    implementation("io.ktor:ktor-client-logging:2.3.12")
+    implementation("io.ktor:ktor-client-encoding:2.3.12")
+    kapt("androidx.room:room-compiler:2.6.1")
 
     testImplementation("junit:junit:4.13.2")
+    testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.8.1")
     androidTestImplementation("androidx.test.ext:junit:1.2.1")
+    androidTestImplementation("androidx.test:core:1.6.1")
     androidTestImplementation("androidx.test.espresso:espresso-core:3.6.1")
     androidTestImplementation("androidx.compose.ui:ui-test-junit4")
 

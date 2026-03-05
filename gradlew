@@ -114,6 +114,12 @@ case "$( uname )" in                #(
   NONSTOP* )        nonstop=true ;;
 esac
 
+# Pin a stable Java runtime for Gradle script evaluation.
+# Some environments default to Java 25.x, which is not supported by this Gradle/Kotlin DSL stack.
+if [ -d "/usr/lib/jvm/java-17-openjdk-amd64" ] ; then
+        JAVA_HOME="/usr/lib/jvm/java-17-openjdk-amd64"
+fi
+
 
 
 # Determine the Java command to use to start the JVM.
