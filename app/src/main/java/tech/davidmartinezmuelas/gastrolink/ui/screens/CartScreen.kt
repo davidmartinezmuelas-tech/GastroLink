@@ -1,19 +1,26 @@
 package tech.davidmartinezmuelas.gastrolink.ui.screens
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ShoppingCart
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
-import androidx.compose.material3.FilledTonalButton
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
@@ -21,11 +28,25 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import coil.compose.AsyncImage
 import tech.davidmartinezmuelas.gastrolink.model.CartItem
 import tech.davidmartinezmuelas.gastrolink.model.OrderMode
 import tech.davidmartinezmuelas.gastrolink.model.Participant
+import tech.davidmartinezmuelas.gastrolink.ui.components.EmptyState
+import tech.davidmartinezmuelas.gastrolink.ui.components.KcalChip
+import tech.davidmartinezmuelas.gastrolink.ui.components.MacroPillsRow
+import tech.davidmartinezmuelas.gastrolink.ui.components.NutritionStatGrid
+import tech.davidmartinezmuelas.gastrolink.ui.components.QuantityControl
+import tech.davidmartinezmuelas.gastrolink.ui.components.SectionHeader
+import tech.davidmartinezmuelas.gastrolink.ui.theme.GastroSpacing
+
+// =============================================================================
+// CartItemCard — Tarjeta premium con miniatura 72dp, macros y cantidad
+// =============================================================================
 
 @Composable
 private fun CartItemCard(
@@ -33,60 +54,81 @@ private fun CartItemCard(
     onIncrease: (String, String?) -> Unit,
     onDecrease: (String, String?) -> Unit
 ) {
-    Card(modifier = Modifier.fillMaxWidth()) {
-        Column(
-            modifier = Modifier.padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(10.dp)
+    val totalKcal  = item.dish.kcal      * item.qty
+    val totalProt  = item.dish.proteinG  * item.qty
+    val totalCarbs = item.dish.carbsG    * item.qty
+    val totalFat   = item.dish.fatG      * item.qty
+
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        shape = MaterialTheme.shapes.large,
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+        elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(GastroSpacing.md),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(GastroSpacing.md)
         ) {
-            Text(text = item.dish.name, style = MaterialTheme.typography.titleMedium)
-            val itemKcal = item.dish.kcal * item.qty
-            val itemP = item.dish.proteinG * item.qty
-            val itemC = item.dish.carbsG * item.qty
-            val itemF = item.dish.fatG * item.qty
-            Text(
-                text = "$itemKcal kcal · P ${itemP}g · C ${itemC}g · G ${itemF}g",
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
-            )
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
+            // Miniatura 72dp
+            Box(
+                modifier = Modifier
+                    .size(72.dp)
+                    .clip(MaterialTheme.shapes.medium)
+                    .background(MaterialTheme.colorScheme.surfaceVariant),
+                contentAlignment = Alignment.Center
             ) {
-                Text(
-                    text = "Cantidad",
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(4.dp)
-                ) {
-                    FilledTonalButton(
-                        onClick = { onDecrease(item.dish.id, item.participantId) },
-                        modifier = Modifier.width(44.dp),
-                        contentPadding = PaddingValues(0.dp)
-                    ) {
-                        Text(text = "−")
-                    }
-                    Text(
-                        text = "${item.qty}",
-                        style = MaterialTheme.typography.titleMedium,
-                        modifier = Modifier.width(32.dp),
-                        textAlign = TextAlign.Center
+                if (!item.dish.imageUrl.isNullOrBlank()) {
+                    AsyncImage(
+                        model = item.dish.imageUrl,
+                        contentDescription = item.dish.name,
+                        contentScale = ContentScale.Crop,
+                        modifier = Modifier.fillMaxSize()
                     )
-                    FilledTonalButton(
-                        onClick = { onIncrease(item.dish.id, item.participantId) },
-                        modifier = Modifier.width(44.dp),
-                        contentPadding = PaddingValues(0.dp)
-                    ) {
-                        Text(text = "+")
-                    }
+                } else {
+                    Text(
+                        text = item.dish.name.take(1).uppercase(),
+                        style = MaterialTheme.typography.headlineSmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        fontWeight = FontWeight.ExtraBold
+                    )
                 }
             }
+
+            // Contenido
+            Column(
+                modifier = Modifier.weight(1f),
+                verticalArrangement = Arrangement.spacedBy(GastroSpacing.xs)
+            ) {
+                Text(
+                    text = item.dish.name,
+                    style = MaterialTheme.typography.titleSmall,
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.onSurface
+                )
+                KcalChip(kcal = totalKcal)
+                MacroPillsRow(
+                    proteinG = totalProt,
+                    carbsG   = totalCarbs,
+                    fatG     = totalFat
+                )
+            }
+
+            // Control de cantidad
+            QuantityControl(
+                qty       = item.qty,
+                onIncrease = { onIncrease(item.dish.id, item.participantId) },
+                onDecrease = { onDecrease(item.dish.id, item.participantId) }
+            )
         }
     }
 }
+
+// =============================================================================
+// CartScreen
+// =============================================================================
 
 @Composable
 fun CartScreen(
@@ -99,114 +141,128 @@ fun CartScreen(
     onBack: () -> Unit,
     onOpenSettings: () -> Unit
 ) {
-    val totalKcal = items.sumOf { it.dish.kcal * it.qty }
+    val totalKcal    = items.sumOf { it.dish.kcal     * it.qty }
     val totalProtein = items.sumOf { it.dish.proteinG * it.qty }
-    val totalCarbs = items.sumOf { it.dish.carbsG * it.qty }
-    val totalFat = items.sumOf { it.dish.fatG * it.qty }
+    val totalCarbs   = items.sumOf { it.dish.carbsG   * it.qty }
+    val totalFat     = items.sumOf { it.dish.fatG     * it.qty }
+    val totalDishes  = items.sumOf { it.qty }
 
     Scaffold(
         topBar = {
             GastroTopBar(
-                title = "Carrito",
-                onBack = onBack,
+                title    = "Carrito",
+                subtitle = if (items.isNotEmpty()) "$totalDishes plato${if (totalDishes != 1) "s" else ""}" else null,
+                onBack   = onBack,
                 onSettings = onOpenSettings
             )
-        },
-        bottomBar = {
-            Column {
-                if (items.isNotEmpty()) {
-                    HorizontalDivider()
-                    Card(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(horizontal = 16.dp, vertical = 8.dp)
-                    ) {
-                        Column(
-                            modifier = Modifier.padding(12.dp),
-                            verticalArrangement = Arrangement.spacedBy(4.dp)
-                        ) {
-                            Text(
-                                text = "Total nutricional",
-                                style = MaterialTheme.typography.labelMedium,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant
-                            )
-                            Row(
-                                modifier = Modifier.fillMaxWidth(),
-                                horizontalArrangement = Arrangement.SpaceBetween
-                            ) {
-                                Text(
-                                    text = "$totalKcal kcal",
-                                    style = MaterialTheme.typography.bodyMedium,
-                                    color = MaterialTheme.colorScheme.primary
+        }
+    ) { innerPadding ->
+
+        if (items.isEmpty()) {
+            EmptyState(
+                icon        = Icons.Filled.ShoppingCart,
+                title       = "El carrito está vacío",
+                subtitle    = "Añade platos desde el menú para continuar",
+                actionLabel = "Ver menú",
+                onAction    = onBack,
+                modifier    = Modifier.padding(innerPadding)
+            )
+        } else {
+            LazyColumn(
+                modifier        = Modifier
+                    .fillMaxSize()
+                    .padding(innerPadding),
+                contentPadding  = PaddingValues(
+                    start   = GastroSpacing.md,
+                    end     = GastroSpacing.md,
+                    top     = GastroSpacing.md,
+                    bottom  = GastroSpacing.xl
+                ),
+                verticalArrangement = Arrangement.spacedBy(GastroSpacing.sm)
+            ) {
+
+                // ── Modo grupo: secciones por participante ─────────────────
+                if (orderMode == OrderMode.GROUP) {
+                    participants.forEach { participant ->
+                        val pItems = items.filter { it.participantId == participant.id }
+                        if (pItems.isNotEmpty()) {
+                            val pKcal  = pItems.sumOf { it.dish.kcal     * it.qty }
+                            val pProt  = pItems.sumOf { it.dish.proteinG * it.qty }
+                            val pCarbs = pItems.sumOf { it.dish.carbsG   * it.qty }
+                            val pFat   = pItems.sumOf { it.dish.fatG     * it.qty }
+
+                            item(key = "header_${participant.id}") {
+                                SectionHeader(title = participant.name)
+                            }
+                            items(pItems, key = { "${it.dish.id}_${it.participantId}" }) { cartItem ->
+                                CartItemCard(
+                                    item       = cartItem,
+                                    onIncrease = onIncrease,
+                                    onDecrease = onDecrease
                                 )
-                                Text(text = "P ${totalProtein}g", style = MaterialTheme.typography.bodyMedium)
-                                Text(text = "C ${totalCarbs}g", style = MaterialTheme.typography.bodyMedium)
-                                Text(text = "G ${totalFat}g", style = MaterialTheme.typography.bodyMedium)
+                            }
+                            item(key = "pnuts_${participant.id}") {
+                                NutritionStatGrid(
+                                    kcal     = pKcal,
+                                    proteinG = pProt,
+                                    carbsG   = pCarbs,
+                                    fatG     = pFat,
+                                    modifier = Modifier.padding(vertical = GastroSpacing.sm)
+                                )
+                            }
+                            item(key = "div_${participant.id}") {
+                                HorizontalDivider(
+                                    modifier  = Modifier.padding(vertical = GastroSpacing.sm),
+                                    color     = MaterialTheme.colorScheme.outlineVariant
+                                )
                             }
                         }
                     }
-                }
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 16.dp, vertical = 8.dp),
-                    horizontalArrangement = Arrangement.End
-                ) {
-                    Button(onClick = onGoToSummary, enabled = items.isNotEmpty()) {
-                        Text(text = "Ir a resumen")
+                    // Total global tras todos los participantes
+                    item(key = "global_header") {
+                        SectionHeader(title = "Total global")
+                    }
+                } else {
+                    // ── Modo solo: items directos ──────────────────────────
+                    items(items, key = { "${it.dish.id}_${it.participantId}" }) { cartItem ->
+                        CartItemCard(
+                            item       = cartItem,
+                            onIncrease = onIncrease,
+                            onDecrease = onDecrease
+                        )
                     }
                 }
-            }
-        }
-    ) { innerPadding ->
-        if (items.isEmpty()) {
-            Box(
-                modifier = Modifier.fillMaxSize().padding(innerPadding),
-                contentAlignment = Alignment.Center
-            ) {
-                Column(
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                    verticalArrangement = Arrangement.spacedBy(8.dp)
-                ) {
-                    Text(text = "El carrito está vacío", style = MaterialTheme.typography.titleMedium)
-                    Text(
-                        text = "Añade platos desde el menú para continuar",
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
+
+                // ── Resumen nutricional total ──────────────────────────────
+                item(key = "nutrition_summary") {
+                    Spacer(Modifier.height(GastroSpacing.sm))
+                    NutritionStatGrid(
+                        kcal     = totalKcal,
+                        proteinG = totalProtein,
+                        carbsG   = totalCarbs,
+                        fatG     = totalFat
                     )
                 }
-            }
-        } else if (orderMode == OrderMode.GROUP) {
-            LazyColumn(
-                modifier = Modifier.fillMaxSize().padding(innerPadding),
-                contentPadding = PaddingValues(16.dp),
-                verticalArrangement = Arrangement.spacedBy(12.dp)
-            ) {
-                participants.forEach { participant ->
-                    val participantItems = items.filter { it.participantId == participant.id }
-                    if (participantItems.isNotEmpty()) {
-                        item(key = "header_${participant.id}") {
-                            Text(
-                                text = participant.name,
-                                style = MaterialTheme.typography.titleSmall,
-                                color = MaterialTheme.colorScheme.primary,
-                                modifier = Modifier.padding(top = 4.dp)
-                            )
-                        }
-                        items(participantItems, key = { "${it.dish.id}_${it.participantId}" }) { item ->
-                            CartItemCard(item = item, onIncrease = onIncrease, onDecrease = onDecrease)
-                        }
+
+                // ── CTA: Confirmar pedido ──────────────────────────────────
+                item(key = "cta_button") {
+                    Spacer(Modifier.height(GastroSpacing.sm))
+                    Button(
+                        onClick  = onGoToSummary,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(52.dp),
+                        shape    = MaterialTheme.shapes.large,
+                        colors   = ButtonDefaults.buttonColors(
+                            containerColor = MaterialTheme.colorScheme.primary
+                        )
+                    ) {
+                        Text(
+                            text       = "Confirmar pedido",
+                            style      = MaterialTheme.typography.labelLarge,
+                            fontWeight = FontWeight.Bold
+                        )
                     }
-                }
-            }
-        } else {
-            LazyColumn(
-                modifier = Modifier.fillMaxSize().padding(innerPadding),
-                contentPadding = PaddingValues(16.dp),
-                verticalArrangement = Arrangement.spacedBy(12.dp)
-            ) {
-                items(items, key = { "${it.dish.id}_${it.participantId}" }) { item ->
-                    CartItemCard(item = item, onIncrease = onIncrease, onDecrease = onDecrease)
                 }
             }
         }
