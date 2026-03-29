@@ -1,0 +1,82 @@
+name: Nightly Debug Release
+# Publicación nocturna del APK debug en el release estable nightly.
+# Solo publica si pasan detekt y los tests unitarios.
+
+on:
+  schedule:
+    - cron: "0 2 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  nightly-release:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Configurar Java 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+          cache: gradle
+
+      - name: Configurar Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: Aceptar licencias Android SDK
+        run: yes | sdkmanager --licenses
+
+      - name: Instalar paquetes Android SDK
+        run: |
+          sdkmanager --install "platform-tools" "platforms;android-35" "build-tools;35.0.0"
+
+      - name: Dar permisos a gradlew
+        run: chmod +x ./gradlew
+
+      - name: Análisis estático (detekt)
+        run: ./gradlew detekt --no-daemon
+
+      - name: Tests unitarios
+        run: ./gradlew testDebugUnitTest --no-daemon
+
+      - name: Compilar APK debug
+        run: ./gradlew :app:assembleDebug --no-daemon
+
+      - name: Generar notas de release
+        run: |
+          BUILD_TIME_UTC=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
+          COMMIT_SHA="${GITHUB_SHA}"
+          COMMIT_SHORT="${COMMIT_SHA:0:7}"
+          COMMIT_URL="${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/commit/${COMMIT_SHA}"
+          NIGHTLY_URL="${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/releases/tag/nightly"
+
+          cat > RELEASE_BODY.md <<EOF
+          Build nocturno de GastroLink.
+
+          - Fecha/hora (UTC): ${BUILD_TIME_UTC}
+          - Commit: ${COMMIT_SHORT}
+          - Enlace al commit: ${COMMIT_URL}
+          - Descarga estable nightly: ${NIGHTLY_URL}
+
+          Instalación rápida:
+          1. Descarga el archivo app-debug.apk desde este release.
+          2. Instala en Android habilitando instalaciones desde orígenes desconocidos si procede.
+          EOF
+
+      - name: Publicar o actualizar release nightly
+        uses: ncipollo/release-action@v1
+        with:
+          tag: nightly
+          name: nightly
+          bodyFile: RELEASE_BODY.md
+          artifacts: app/build/outputs/apk/debug/app-debug.apk
+          artifactErrorsFailBuild: true
+          allowUpdates: true
+          replacesArtifacts: true
+          makeLatest: true

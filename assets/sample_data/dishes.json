@@ -1,0 +1,22 @@
+[
+  { "id": "d001", "name": "Ensalada de quinoa y pollo", "kcal": 420, "protein_g": 31, "carbs_g": 38, "fat_g": 16 },
+  { "id": "d002", "name": "Wrap integral de pavo", "kcal": 390, "protein_g": 27, "carbs_g": 34, "fat_g": 14 },
+  { "id": "d003", "name": "Bowl mediterraneo de garbanzos", "kcal": 460, "protein_g": 18, "carbs_g": 52, "fat_g": 19 },
+  { "id": "d004", "name": "Salmon al horno con verduras", "kcal": 510, "protein_g": 36, "carbs_g": 22, "fat_g": 30 },
+  { "id": "d005", "name": "Pasta integral con atun", "kcal": 540, "protein_g": 33, "carbs_g": 62, "fat_g": 17 },
+  { "id": "d006", "name": "Tacos de ternera magra", "kcal": 610, "protein_g": 35, "carbs_g": 49, "fat_g": 29 },
+  { "id": "d007", "name": "Crema de calabaza y yogur", "kcal": 280, "protein_g": 9, "carbs_g": 31, "fat_g": 11 },
+  { "id": "d008", "name": "Hamburguesa de lentejas", "kcal": 430, "protein_g": 20, "carbs_g": 47, "fat_g": 16 },
+  { "id": "d009", "name": "Arroz salteado con tofu", "kcal": 500, "protein_g": 22, "carbs_g": 63, "fat_g": 15 },
+  { "id": "d010", "name": "Pollo tikka con arroz basmati", "kcal": 620, "protein_g": 39, "carbs_g": 58, "fat_g": 24 },
+  { "id": "d011", "name": "Poke de atun y edamame", "kcal": 470, "protein_g": 32, "carbs_g": 45, "fat_g": 17 },
+  { "id": "d012", "name": "Sopa miso con noodles", "kcal": 340, "protein_g": 14, "carbs_g": 44, "fat_g": 10 },
+  { "id": "d013", "name": "Burrito de frijoles y arroz", "kcal": 590, "protein_g": 24, "carbs_g": 78, "fat_g": 18 },
+  { "id": "d014", "name": "Revuelto de claras con espinacas", "kcal": 260, "protein_g": 28, "carbs_g": 8, "fat_g": 12 },
+  { "id": "d015", "name": "Lasaña vegetal", "kcal": 520, "protein_g": 21, "carbs_g": 56, "fat_g": 23 },
+  { "id": "d016", "name": "Curry de pollo y coco ligero", "kcal": 560, "protein_g": 34, "carbs_g": 41, "fat_g": 27 },
+  { "id": "d017", "name": "Ensalada cesar ligera", "kcal": 410, "protein_g": 29, "carbs_g": 19, "fat_g": 24 },
+  { "id": "d018", "name": "Pizza integral de verduras", "kcal": 640, "protein_g": 26, "carbs_g": 72, "fat_g": 27 },
+  { "id": "d019", "name": "Filete de merluza con pure", "kcal": 450, "protein_g": 35, "carbs_g": 33, "fat_g": 18 },
+  { "id": "d020", "name": "Yogur griego con frutas y avena", "kcal": 330, "protein_g": 19, "carbs_g": 36, "fat_g": 12 }
+]

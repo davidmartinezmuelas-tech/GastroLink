@@ -1,0 +1,202 @@
+[
+  {
+    "id": "d001",
+    "name": "Ensalada de quinoa y pollo",
+    "kcal": 420,
+    "protein_g": 31,
+    "carbs_g": 38,
+    "fat_g": 16,
+    "image_url": "https://images.unsplash.com/photo-1512621776951-a57141f2eefd?auto=format&fit=crop&w=600&q=80",
+    "ingredients": ["Quinoa", "Pechuga de pollo", "Lechuga", "Tomate cherry", "Pepino", "Aceite de oliva", "Zumo de limón"]
+  },
+  {
+    "id": "d002",
+    "name": "Wrap integral de pavo",
+    "kcal": 390,
+    "protein_g": 27,
+    "carbs_g": 34,
+    "fat_g": 14,
+    "image_url": "https://images.unsplash.com/photo-1626700051175-6818013e1d4f?auto=format&fit=crop&w=600&q=80",
+    "ingredients": ["Tortilla integral", "Fiambre de pavo", "Lechuga", "Tomate", "Aguacate", "Mostaza"]
+  },
+  {
+    "id": "d003",
+    "name": "Bowl mediterráneo de garbanzos",
+    "kcal": 460,
+    "protein_g": 18,
+    "carbs_g": 52,
+    "fat_g": 19,
+    "image_url": "https://images.unsplash.com/photo-1529059997568-3d847b1154f0?auto=format&fit=crop&w=600&q=80",
+    "ingredients": ["Garbanzos", "Pimiento rojo", "Cebolla morada", "Tomate", "Aceitunas", "Queso feta", "Aceite de oliva", "Orégano"]
+  },
+  {
+    "id": "d004",
+    "name": "Salmón al horno con verduras",
+    "kcal": 510,
+    "protein_g": 36,
+    "carbs_g": 22,
+    "fat_g": 30,
+    "image_url": "https://images.unsplash.com/photo-1467003909585-2f8a72700288?auto=format&fit=crop&w=600&q=80",
+    "ingredients": ["Salmón fresco", "Calabacín", "Pimiento", "Cebolla", "Limón", "Eneldo", "Aceite de oliva"]
+  },
+  {
+    "id": "d005",
+    "name": "Pasta integral con atún",
+    "kcal": 540,
+    "protein_g": 33,
+    "carbs_g": 62,
+    "fat_g": 17,
+    "image_url": "https://images.unsplash.com/photo-1621996346565-e3dbc646d9a9?auto=format&fit=crop&w=600&q=80",
+    "ingredients": ["Pasta integral", "Atún al natural", "Tomate triturado", "Aceitunas negras", "Alcaparras", "Ajo", "Aceite de oliva"]
+  },
+  {
+    "id": "d006",
+    "name": "Tacos de ternera magra",
+    "kcal": 610,
+    "protein_g": 35,
+    "carbs_g": 49,
+    "fat_g": 29,
+    "image_url": "https://images.unsplash.com/photo-1565299507177-b0ac66763828?auto=format&fit=crop&w=600&q=80",
+    "ingredients": ["Tortilla de maíz", "Ternera magra picada", "Lechuga", "Tomate", "Queso cheddar", "Guacamole", "Salsa verde"]
+  },
+  {
+    "id": "d007",
+    "name": "Crema de calabaza y yogur",
+    "kcal": 280,
+    "protein_g": 9,
+    "carbs_g": 31,
+    "fat_g": 11,
+    "image_url": "https://images.unsplash.com/photo-1547592180-85f173990554?auto=format&fit=crop&w=600&q=80",
+    "ingredients": ["Calabaza", "Cebolla", "Ajo", "Caldo vegetal", "Yogur natural", "Nuez moscada", "Aceite de oliva"]
+  },
+  {
+    "id": "d008",
+    "name": "Hamburguesa de lentejas",
+    "kcal": 430,
+    "protein_g": 20,
+    "carbs_g": 47,
+    "fat_g": 16,
+    "image_url": "https://images.unsplash.com/photo-1550547660-d9450f859349?auto=format&fit=crop&w=600&q=80",
+    "ingredients": ["Lentejas cocidas", "Pan integral", "Cebolla", "Zanahoria", "Ajo", "Comino", "Lechuga", "Tomate"]
+  },
+  {
+    "id": "d009",
+    "name": "Arroz salteado con tofu",
+    "kcal": 500,
+    "protein_g": 22,
+    "carbs_g": 63,
+    "fat_g": 15,
+    "image_url": "https://images.unsplash.com/photo-1603133872878-684f208fb84b?auto=format&fit=crop&w=600&q=80",
+    "ingredients": ["Arroz basmati", "Tofu firme", "Edamame", "Zanahoria", "Pimiento verde", "Salsa de soja", "Jengibre", "Aceite de sésamo"]
+  },
+  {
+    "id": "d010",
+    "name": "Pollo tikka con arroz basmati",
+    "kcal": 620,
+    "protein_g": 39,
+    "carbs_g": 58,
+    "fat_g": 24,
+    "image_url": "https://images.unsplash.com/photo-1585937421612-70a008356fbe?auto=format&fit=crop&w=600&q=80",
+    "ingredients": ["Pechuga de pollo", "Yogur", "Especias tikka masala", "Arroz basmati", "Cilantro fresco", "Zumo de limón", "Ajo", "Jengibre"]
+  },
+  {
+    "id": "d011",
+    "name": "Poke de atún y edamame",
+    "kcal": 470,
+    "protein_g": 32,
+    "carbs_g": 45,
+    "fat_g": 17,
+    "image_url": "https://images.unsplash.com/photo-1546069901-d5bfd2cbfb1f?auto=format&fit=crop&w=600&q=80",
+    "ingredients": ["Atún fresco", "Arroz de sushi", "Edamame", "Alga nori", "Aguacate", "Pepino", "Salsa de soja", "Sésamo"]
+  },
+  {
+    "id": "d012",
+    "name": "Sopa miso con noodles",
+    "kcal": 340,
+    "protein_g": 14,
+    "carbs_g": 44,
+    "fat_g": 10,
+    "image_url": "https://images.unsplash.com/photo-1569718212165-3a8278d5f624?auto=format&fit=crop&w=600&q=80",
+    "ingredients": ["Pasta miso", "Noodles de trigo", "Tofu sedoso", "Alga wakame", "Cebolleta", "Dashi", "Soja"]
+  },
+  {
+    "id": "d013",
+    "name": "Burrito de frijoles y arroz",
+    "kcal": 590,
+    "protein_g": 24,
+    "carbs_g": 78,
+    "fat_g": 18,
+    "image_url": "https://images.unsplash.com/photo-1543339308-43e59d6b73a6?auto=format&fit=crop&w=600&q=80",
+    "ingredients": ["Tortilla de trigo", "Frijoles negros", "Arroz integral", "Pimiento", "Cebolla", "Salsa picante", "Queso"]
+  },
+  {
+    "id": "d014",
+    "name": "Revuelto de claras con espinacas",
+    "kcal": 260,
+    "protein_g": 28,
+    "carbs_g": 8,
+    "fat_g": 12,
+    "image_url": "https://images.unsplash.com/photo-1525755662778-989d0524087e?auto=format&fit=crop&w=600&q=80",
+    "ingredients": ["Claras de huevo", "Espinacas frescas", "Ajo", "Tomate cherry", "Aceite de oliva", "Sal", "Pimienta negra"]
+  },
+  {
+    "id": "d015",
+    "name": "Lasaña vegetal",
+    "kcal": 520,
+    "protein_g": 21,
+    "carbs_g": 56,
+    "fat_g": 23,
+    "image_url": "https://images.unsplash.com/photo-1574894709920-11b28e7367e3?auto=format&fit=crop&w=600&q=80",
+    "ingredients": ["Láminas de pasta", "Calabacín", "Berenjena", "Tomate triturado", "Mozzarella", "Bechamel ligera", "Albahaca"]
+  },
+  {
+    "id": "d016",
+    "name": "Curry de pollo y coco ligero",
+    "kcal": 560,
+    "protein_g": 34,
+    "carbs_g": 41,
+    "fat_g": 27,
+    "image_url": "https://images.unsplash.com/photo-1455619452474-d2be8b1e70cd?auto=format&fit=crop&w=600&q=80",
+    "ingredients": ["Pechuga de pollo", "Leche de coco light", "Cúrcuma", "Jengibre", "Ajo", "Pimiento rojo", "Arroz basmati", "Cilantro"]
+  },
+  {
+    "id": "d017",
+    "name": "Ensalada César ligera",
+    "kcal": 410,
+    "protein_g": 29,
+    "carbs_g": 19,
+    "fat_g": 24,
+    "image_url": "https://images.unsplash.com/photo-1512852939750-1305098529bf?auto=format&fit=crop&w=600&q=80",
+    "ingredients": ["Lechuga romana", "Pechuga de pollo a la plancha", "Picatostes integrales", "Parmesano", "Salsa César light", "Anchoas"]
+  },
+  {
+    "id": "d018",
+    "name": "Pizza integral de verduras",
+    "kcal": 640,
+    "protein_g": 26,
+    "carbs_g": 72,
+    "fat_g": 27,
+    "image_url": "https://images.unsplash.com/photo-1513104890138-7c749659a591?auto=format&fit=crop&w=600&q=80",
+    "ingredients": ["Masa integral", "Tomate frito", "Mozzarella light", "Pimiento", "Champiñones", "Cebolla roja", "Rúcula", "Orégano"]
+  },
+  {
+    "id": "d019",
+    "name": "Filete de merluza con puré",
+    "kcal": 450,
+    "protein_g": 35,
+    "carbs_g": 33,
+    "fat_g": 18,
+    "image_url": "https://images.unsplash.com/photo-1519708227418-c8fd9a32b7a2?auto=format&fit=crop&w=600&q=80",
+    "ingredients": ["Merluza fresca", "Patata", "Mantequilla", "Leche desnatada", "Limón", "Perejil", "Sal", "Aceite de oliva"]
+  },
+  {
+    "id": "d020",
+    "name": "Yogur griego con frutas y avena",
+    "kcal": 330,
+    "protein_g": 19,
+    "carbs_g": 36,
+    "fat_g": 12,
+    "image_url": "https://images.unsplash.com/photo-1484723091739-30a097e8f929?auto=format&fit=crop&w=600&q=80",
+    "ingredients": ["Yogur griego 0%", "Avena", "Fresas", "Arándanos", "Miel", "Nueces", "Canela"]
+  }
+]
