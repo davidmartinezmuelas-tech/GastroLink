@@ -34,3 +34,13 @@ data class AiRecommendationResponse(
     val model: String? = null,
     val requestId: String? = null
 )
+
+data class AiChatRequest(
+    val messages: List<ChatMessagePayload>,
+    val profile: AiRecommendationRequest.ProfilePayload? = null,
+    val availableDishes: List<String>? = null
+) {
+    data class ChatMessagePayload(val role: String, val content: String)
+}
+
+data class AiChatResponse(val reply: String)

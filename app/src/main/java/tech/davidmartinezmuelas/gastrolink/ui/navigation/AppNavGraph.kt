@@ -34,6 +34,7 @@ import tech.davidmartinezmuelas.gastrolink.model.OrderMode
 import tech.davidmartinezmuelas.gastrolink.ui.AppViewModel
 import tech.davidmartinezmuelas.gastrolink.ui.BuildInfoProvider
 import tech.davidmartinezmuelas.gastrolink.ui.screens.BranchScreen
+import tech.davidmartinezmuelas.gastrolink.ui.screens.ChatScreen
 import tech.davidmartinezmuelas.gastrolink.ui.screens.CartScreen
 import tech.davidmartinezmuelas.gastrolink.ui.screens.MenuScreen
 import tech.davidmartinezmuelas.gastrolink.ui.screens.NutritionModeScreen
@@ -77,7 +78,8 @@ fun AppNavGraph(
                 onManageProfiles = {
                     viewModel.setOrderMode(OrderMode.SOLO)
                     navController.navigate(AppRoute.PROFILE_MANAGE)
-                }
+                },
+                onOpenChat = { navController.navigate(AppRoute.CHAT) }
             )
         }
 
@@ -296,6 +298,16 @@ fun AppNavGraph(
                 onRenameParticipant = { _, _ -> },
                 onUpdateGroupProfile = { _, _, _, _ -> },
                 onContinue = { navController.popBackStack() },
+                onBack = { navController.popBackStack() }
+            )
+        }
+
+        composable(AppRoute.CHAT) {
+            ChatScreen(
+                messages = state.chatMessages,
+                isLoading = state.isChatLoading,
+                onSendMessage = viewModel::sendChatMessage,
+                onClearChat = viewModel::clearChat,
                 onBack = { navController.popBackStack() }
             )
         }

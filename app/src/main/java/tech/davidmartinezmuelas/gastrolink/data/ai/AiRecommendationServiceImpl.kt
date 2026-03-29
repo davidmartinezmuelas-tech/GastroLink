@@ -52,6 +52,21 @@ class AiRecommendationServiceImpl(
         throw lastError ?: error("No se pudo obtener recomendacion IA")
     }
 
+    override suspend fun chat(request: AiChatRequest): AiChatResponse {
+        check(baseUrl.isNotBlank()) { "Servicio IA no configurado" }
+
+        val response = client.post("${baseUrl.trimEnd('/')}/ai/chat") {
+            contentType(ContentType.Application.Json)
+            if (proxyToken.isNotBlank()) {
+                header(HttpHeaders.Authorization, "Bearer $proxyToken")
+            }
+            setBody(request)
+        }
+
+        check(response.status == HttpStatusCode.OK) { "Servicio IA no disponible" }
+        return response.body()
+    }
+
     companion object {
         private fun defaultHttpClient(): HttpClient {
             return HttpClient(Android) {

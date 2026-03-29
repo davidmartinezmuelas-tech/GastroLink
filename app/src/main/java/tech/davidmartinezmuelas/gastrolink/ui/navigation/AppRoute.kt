@@ -15,4 +15,5 @@ object AppRoute {
     const val DETAIL_WITH_ARG = "detail/{orderId}"
     const val STATS = "stats"
     const val PROFILE_MANAGE = "profile_manage"
+    const val CHAT = "chat"
 }

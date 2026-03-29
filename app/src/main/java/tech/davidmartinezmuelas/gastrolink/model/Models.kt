@@ -101,3 +101,8 @@ data class RecommendationContext(
     val nutritionMode: NutritionMode,
     val userProfile: UserProfile?
 )
+
+data class ChatMessage(
+    val role: String,
+    val content: String
+)

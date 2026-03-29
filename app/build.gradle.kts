@@ -46,7 +46,7 @@ android {
 
     buildTypes {
         debug {
-            buildConfigField("String", "AI_BASE_URL", "\"https://example.com\"")
+            buildConfigField("String", "AI_BASE_URL", "\"https://gastrolink-onjy.onrender.com\"")
             buildConfigField("String", "AI_PROXY_TOKEN", "\"$aiProxyTokenDebug\"")
             buildConfigField("boolean", "AI_ENABLED", "true")
         }

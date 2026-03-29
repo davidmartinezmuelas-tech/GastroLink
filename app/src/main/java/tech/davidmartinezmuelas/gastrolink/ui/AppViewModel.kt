@@ -80,7 +80,9 @@ data class AppUiState(
     val recommendationResult: RecommendationResult = RecommendationResult(
         source = RecommendationSource.NONE,
         messages = emptyList()
-    )
+    ),
+    val chatMessages: List<tech.davidmartinezmuelas.gastrolink.model.ChatMessage> = emptyList(),
+    val isChatLoading: Boolean = false
 )
 
 data class SummaryUiState(
@@ -105,11 +107,12 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
         isAiEnabledByBuild = BuildConfig.AI_ENABLED
     )
     private val settingsRepository = SettingsRepository(application)
+    private val aiService = AiRecommendationServiceImpl(
+        baseUrl = BuildConfig.AI_BASE_URL,
+        proxyToken = BuildConfig.AI_PROXY_TOKEN
+    )
     private val getRecommendationUseCase = GetRecommendationUseCase(
-        aiRecommendationService = AiRecommendationServiceImpl(
-            baseUrl = BuildConfig.AI_BASE_URL,
-            proxyToken = BuildConfig.AI_PROXY_TOKEN
-        ),
+        aiRecommendationService = aiService,
         isAiEnabledByBuild = BuildConfig.AI_ENABLED,
         includeDebugInfo = BuildConfig.DEBUG
     )
@@ -392,6 +395,55 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
         viewModelScope.launch {
             settingsRepository.saveSoloProfileJson(gson.toJson(saved.profile))
         }
+    }
+
+    fun sendChatMessage(text: String) {
+        val trimmed = text.trim().ifBlank { return }
+        val userMsg = tech.davidmartinezmuelas.gastrolink.model.ChatMessage("user", trimmed)
+        val history = _uiState.value.chatMessages + userMsg
+        _uiState.update { it.copy(chatMessages = history, isChatLoading = true) }
+
+        viewModelScope.launch {
+            try {
+                val state = _uiState.value
+                val profilePayload = if (state.soloProfile.let {
+                        it.age != null || it.weightKg != null || it.goal != null
+                    }) {
+                    val summaryMap = mutableMapOf<String, Any?>()
+                    state.soloProfile.age?.let { summaryMap["edad"] = it }
+                    state.soloProfile.weightKg?.let { summaryMap["pesoKg"] = it }
+                    state.soloProfile.heightCm?.let { summaryMap["alturaCm"] = it }
+                    state.soloProfile.sex?.name?.let { summaryMap["sexo"] = it }
+                    state.soloProfile.goal?.name?.let { summaryMap["objetivo"] = it }
+                    state.soloProfile.activityLevel?.name?.let { summaryMap["actividad"] = it }
+                    tech.davidmartinezmuelas.gastrolink.data.ai.AiRecommendationRequest.ProfilePayload(
+                        type = "SOLO",
+                        summary = summaryMap
+                    )
+                } else null
+
+                val request = tech.davidmartinezmuelas.gastrolink.data.ai.AiChatRequest(
+                    messages = history.map {
+                        tech.davidmartinezmuelas.gastrolink.data.ai.AiChatRequest.ChatMessagePayload(it.role, it.content)
+                    },
+                    profile = profilePayload,
+                    availableDishes = state.dishes.map { it.name }.ifEmpty { null }
+                )
+
+                val response = aiService.chat(request)
+                val assistantMsg = tech.davidmartinezmuelas.gastrolink.model.ChatMessage("assistant", response.reply)
+                _uiState.update { it.copy(chatMessages = it.chatMessages + assistantMsg, isChatLoading = false) }
+            } catch (_: Exception) {
+                val errorMsg = tech.davidmartinezmuelas.gastrolink.model.ChatMessage(
+                    "assistant", "Lo siento, no pude conectar con el asistente. Comprueba tu conexión e inténtalo de nuevo."
+                )
+                _uiState.update { it.copy(chatMessages = it.chatMessages + errorMsg, isChatLoading = false) }
+            }
+        }
+    }
+
+    fun clearChat() {
+        _uiState.update { it.copy(chatMessages = emptyList()) }
     }
 
     fun addParticipant() {

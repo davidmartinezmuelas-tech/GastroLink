@@ -105,6 +105,62 @@ app.post("/ai/recommendation", requireProxyAuth, async (req, res) => {
   }
 });
 
+app.post("/ai/chat", requireProxyAuth, async (req, res) => {
+  if (!process.env.GROQ_API_KEY) {
+    return res.status(500).json({ error: "Configuracion incompleta del servicio de IA." });
+  }
+
+  const { messages, profile, availableDishes } = req.body || {};
+
+  if (!Array.isArray(messages) || messages.length === 0 || messages.length > 40) {
+    return res.status(400).json({ error: "messages invalido." });
+  }
+
+  const safeMessages = messages.map((m) => ({
+    role: ["user", "assistant"].includes(m.role) ? m.role : "user",
+    content: sanitizeText(String(m.content || ""), 600)
+  })).filter((m) => m.content.length > 0);
+
+  if (safeMessages.length === 0) {
+    return res.status(400).json({ error: "Sin mensajes validos." });
+  }
+
+  const dishList = Array.isArray(availableDishes)
+    ? availableDishes.slice(0, 30).map((d) => sanitizeText(String(d), 80)).filter(Boolean).join(", ")
+    : "";
+
+  const profileLine = profile && typeof profile === "object"
+    ? `Perfil del usuario (${sanitizeText(String(profile.type || ""), 30)}): ${sanitizeText(JSON.stringify(profile.summary || {}), 200)}`
+    : "Sin perfil nutricional del usuario.";
+
+  const systemPrompt = [
+    "Eres un asistente de GastroLink, una app de pedidos de comida con seguimiento nutricional.",
+    "Ayudas al usuario a decidir que pedir segun sus preferencias y perfil nutricional.",
+    "Responde siempre en espanol. Se breve, amigable y practico.",
+    "No inventes platos que no esten en el menu disponible.",
+    dishList ? `Menu disponible: ${dishList}.` : "",
+    profileLine
+  ].filter(Boolean).join(" ");
+
+  try {
+    const completion = await openai.chat.completions.create({
+      model: OPENAI_MODEL,
+      temperature: 0.6,
+      max_tokens: 200,
+      messages: [{ role: "system", content: systemPrompt }, ...safeMessages]
+    });
+
+    const reply = sanitizeText(completion.choices?.[0]?.message?.content || "", 500);
+    if (!reply) {
+      return res.status(502).json({ error: "No se pudo generar respuesta." });
+    }
+
+    return res.status(200).json({ reply });
+  } catch (_error) {
+    return res.status(502).json({ error: "Servicio de chat no disponible temporalmente." });
+  }
+});
+
 app.use((req, res) => {
   res.status(404).json({ error: `Ruta no encontrada: ${req.method} ${req.path}` });
 });
@@ -445,6 +501,10 @@ function isCorsRouteAllowed(method, path) {
   }
 
   if (path === "/ai/recommendation" && (method === "POST" || method === "OPTIONS")) {
+    return true;
+  }
+
+  if (path === "/ai/chat" && (method === "POST" || method === "OPTIONS")) {
     return true;
   }
 
