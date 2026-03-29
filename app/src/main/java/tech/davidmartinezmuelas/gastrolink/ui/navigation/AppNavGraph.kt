@@ -1,9 +1,20 @@
 package tech.davidmartinezmuelas.gastrolink.ui.navigation
 
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material3.ExtendedFloatingActionButton
+import androidx.compose.material3.Icon
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.unit.dp
+import androidx.navigation.compose.currentBackStackEntryAsState
 // Navigation flow:
 //
 //   START_MODE
@@ -55,12 +66,17 @@ fun AppNavGraph(
 ) {
     val state by viewModel.uiState.collectAsState()
     val summaryState by viewModel.summaryUiState.collectAsState()
+    val currentRoute by navController.currentBackStackEntryAsState()
+    val route = currentRoute?.destination?.route
+    val hiddenChatRoutes = setOf(AppRoute.CART, AppRoute.CHAT)
+    val showChatFab = route != null && route !in hiddenChatRoutes
 
-    NavHost(
-        navController = navController,
-        startDestination = AppRoute.START_MODE,
-        modifier = modifier
-    ) {
+    Box(modifier = modifier.fillMaxSize()) {
+        NavHost(
+            navController = navController,
+            startDestination = AppRoute.START_MODE,
+            modifier = Modifier.fillMaxSize()
+        ) {
         composable(AppRoute.START_MODE) {
             StartModeScreen(
                 selectedMode = state.orderMode,
@@ -78,8 +94,7 @@ fun AppNavGraph(
                 onManageProfiles = {
                     viewModel.setOrderMode(OrderMode.SOLO)
                     navController.navigate(AppRoute.PROFILE_MANAGE)
-                },
-                onOpenChat = { navController.navigate(AppRoute.CHAT) }
+                }
             )
         }
 
@@ -309,6 +324,18 @@ fun AppNavGraph(
                 onSendMessage = viewModel::sendChatMessage,
                 onClearChat = viewModel::clearChat,
                 onBack = { navController.popBackStack() }
+            )
+        }
+    }
+
+        if (showChatFab) {
+            ExtendedFloatingActionButton(
+                onClick = { navController.navigate(AppRoute.CHAT) },
+                icon = { Icon(Icons.Filled.Edit, contentDescription = null) },
+                text = { Text("Asistente IA") },
+                modifier = Modifier
+                    .align(Alignment.BottomEnd)
+                    .padding(16.dp)
             )
         }
     }

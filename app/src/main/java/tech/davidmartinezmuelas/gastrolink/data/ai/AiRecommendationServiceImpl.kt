@@ -74,9 +74,9 @@ class AiRecommendationServiceImpl(
                     gson()
                 }
                 install(HttpTimeout) {
-                    requestTimeoutMillis = 10_000
-                    connectTimeoutMillis = 10_000
-                    socketTimeoutMillis = 10_000
+                    requestTimeoutMillis = 30_000
+                    connectTimeoutMillis = 15_000
+                    socketTimeoutMillis = 30_000
                 }
             }
         }
