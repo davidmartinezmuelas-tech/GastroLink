@@ -3,17 +3,20 @@ package tech.davidmartinezmuelas.gastrolink.ui.screens
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
@@ -27,6 +30,7 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.launch
 import tech.davidmartinezmuelas.gastrolink.model.NutritionMode
@@ -35,6 +39,8 @@ import tech.davidmartinezmuelas.gastrolink.ui.DataWipeResult
 import tech.davidmartinezmuelas.gastrolink.ui.ExportShareHelper
 import tech.davidmartinezmuelas.gastrolink.ui.HistoryExportFormat
 import tech.davidmartinezmuelas.gastrolink.ui.HistoryExportResult
+import tech.davidmartinezmuelas.gastrolink.ui.components.SectionHeader
+import tech.davidmartinezmuelas.gastrolink.ui.theme.GastroSpacing
 
 @Composable
 fun SettingsScreen(
@@ -73,13 +79,15 @@ fun SettingsScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(innerPadding)
-                .padding(16.dp)
-                .verticalScroll(rememberScrollState()),
-            verticalArrangement = Arrangement.spacedBy(14.dp)
+                .verticalScroll(rememberScrollState())
+                .padding(horizontal = GastroSpacing.md),
+            verticalArrangement = Arrangement.spacedBy(GastroSpacing.md)
         ) {
-            // Plan badge
+            // Plan card
             Card(
                 modifier = Modifier.fillMaxWidth(),
+                shape = MaterialTheme.shapes.large,
+                elevation = CardDefaults.cardElevation(defaultElevation = 1.dp),
                 colors = CardDefaults.cardColors(
                     containerColor = if (isPremiumDemoEnabled) {
                         MaterialTheme.colorScheme.primaryContainer
@@ -91,14 +99,15 @@ fun SettingsScreen(
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(12.dp),
+                        .padding(GastroSpacing.md),
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Column {
+                    Column(modifier = Modifier.weight(1f)) {
                         Text(
                             text = if (isPremiumDemoEnabled) "Premium Demo" else "Plan Free",
-                            style = MaterialTheme.typography.titleSmall
+                            style = MaterialTheme.typography.titleSmall,
+                            fontWeight = FontWeight.Bold
                         )
                         Text(
                             text = if (isPremiumDemoEnabled) {
@@ -116,99 +125,172 @@ fun SettingsScreen(
                 }
             }
 
-            HorizontalDivider()
-
-            Text(text = "Plan y acceso", style = MaterialTheme.typography.titleMedium)
-
-            // Premium Demo toggle
-            Row(
+            // Section: Plan y acceso
+            SectionHeader(title = "Plan y acceso")
+            Card(
                 modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Column(modifier = Modifier.weight(1f)) {
-                    Text(text = "Premium Demo", style = MaterialTheme.typography.bodyLarge)
-                    Text(
-                        text = "Activa perfiles nutricionales, recomendaciones y estadísticas avanzadas. Sin coste real.",
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                }
-                Switch(
-                    checked = isPremiumDemoEnabled,
-                    onCheckedChange = { checked ->
-                        if (checked) {
-                            showPremiumEnableDialog.value = true
-                        } else {
-                            onTogglePremiumDemo(false)
-                        }
-                    },
-                    modifier = Modifier.padding(start = 8.dp)
+                shape = MaterialTheme.shapes.large,
+                elevation = CardDefaults.cardElevation(defaultElevation = 1.dp),
+                colors = CardDefaults.cardColors(
+                    containerColor = MaterialTheme.colorScheme.surface
                 )
-            }
-
-            HorizontalDivider()
-
-            Text(text = "Navegación", style = MaterialTheme.typography.titleMedium)
-
-            Button(onClick = onOpenHistory, modifier = Modifier.fillMaxWidth()) {
-                Text(text = "Historial y estadísticas")
-            }
-
-            if (canShowAiToggle) {
-                HorizontalDivider()
-                Text(text = "Recomendaciones IA", style = MaterialTheme.typography.titleMedium)
+            ) {
                 Row(
-                    modifier = Modifier.fillMaxWidth(),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(GastroSpacing.md),
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Column(modifier = Modifier.weight(1f)) {
-                        Text(text = "Usar IA (beta)", style = MaterialTheme.typography.bodyLarge)
                         Text(
-                            text = "Las recomendaciones se generan via servidor externo.",
+                            text = "Premium Demo",
+                            style = MaterialTheme.typography.bodyLarge
+                        )
+                        Text(
+                            text = "Activa perfiles nutricionales, recomendaciones y estadísticas avanzadas. Sin coste real.",
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
                     }
                     Switch(
-                        checked = useAiRecommendations,
-                        onCheckedChange = onToggleUseAiRecommendations,
-                        modifier = Modifier.padding(start = 8.dp)
+                        checked = isPremiumDemoEnabled,
+                        onCheckedChange = { checked ->
+                            if (checked) {
+                                showPremiumEnableDialog.value = true
+                            } else {
+                                onTogglePremiumDemo(false)
+                            }
+                        },
+                        modifier = Modifier.padding(start = GastroSpacing.sm)
                     )
                 }
             }
 
-            HorizontalDivider()
-
-            Text(text = "Privacidad", style = MaterialTheme.typography.titleMedium)
-
-            Button(
-                onClick = { showExportDialog.value = true },
-                modifier = Modifier.fillMaxWidth()
+            // Section: Navegación
+            SectionHeader(title = "Navegación")
+            Card(
+                modifier = Modifier.fillMaxWidth(),
+                shape = MaterialTheme.shapes.large,
+                elevation = CardDefaults.cardElevation(defaultElevation = 1.dp),
+                colors = CardDefaults.cardColors(
+                    containerColor = MaterialTheme.colorScheme.surface
+                )
             ) {
-                Text(text = "Exportar historial")
+                Column(modifier = Modifier.padding(GastroSpacing.md)) {
+                    OutlinedButton(
+                        onClick = onOpenHistory,
+                        modifier = Modifier.fillMaxWidth(),
+                        shape = MaterialTheme.shapes.large
+                    ) {
+                        Text(text = "Historial y estadísticas")
+                    }
+                }
             }
 
-            Button(
-                onClick = { showDeleteDialog.value = true },
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                Text(text = "Borrar todos mis datos")
+            // Section: Recomendaciones IA (conditional)
+            if (canShowAiToggle) {
+                SectionHeader(title = "Recomendaciones IA")
+                Card(
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = MaterialTheme.shapes.large,
+                    elevation = CardDefaults.cardElevation(defaultElevation = 1.dp),
+                    colors = CardDefaults.cardColors(
+                        containerColor = MaterialTheme.colorScheme.surface
+                    )
+                ) {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(GastroSpacing.md),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Column(modifier = Modifier.weight(1f)) {
+                            Text(
+                                text = "Usar IA (beta)",
+                                style = MaterialTheme.typography.bodyLarge
+                            )
+                            Text(
+                                text = "Las recomendaciones se generan via servidor externo.",
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                        }
+                        Switch(
+                            checked = useAiRecommendations,
+                            onCheckedChange = onToggleUseAiRecommendations,
+                            modifier = Modifier.padding(start = GastroSpacing.sm)
+                        )
+                    }
+                }
             }
 
-            HorizontalDivider()
+            // Section: Privacidad
+            SectionHeader(title = "Privacidad")
+            Card(
+                modifier = Modifier.fillMaxWidth(),
+                shape = MaterialTheme.shapes.large,
+                elevation = CardDefaults.cardElevation(defaultElevation = 1.dp),
+                colors = CardDefaults.cardColors(
+                    containerColor = MaterialTheme.colorScheme.surface
+                )
+            ) {
+                Column(
+                    modifier = Modifier.padding(GastroSpacing.md),
+                    verticalArrangement = Arrangement.spacedBy(GastroSpacing.sm)
+                ) {
+                    OutlinedButton(
+                        onClick = { showExportDialog.value = true },
+                        modifier = Modifier.fillMaxWidth(),
+                        shape = MaterialTheme.shapes.large
+                    ) {
+                        Text(text = "Exportar historial")
+                    }
+                    Button(
+                        onClick = { showDeleteDialog.value = true },
+                        modifier = Modifier.fillMaxWidth(),
+                        shape = MaterialTheme.shapes.large,
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = MaterialTheme.colorScheme.error,
+                            contentColor = MaterialTheme.colorScheme.onError
+                        )
+                    ) {
+                        Text(text = "Borrar todos mis datos")
+                    }
+                }
+            }
 
-            Text(text = "Acerca de", style = MaterialTheme.typography.titleMedium)
-            Text(
-                text = "Versión ${buildInfo.versionName} (${buildInfo.versionCode})",
-                style = MaterialTheme.typography.bodySmall
-            )
-            Text(text = "Git: ${buildInfo.gitSha}", style = MaterialTheme.typography.bodySmall)
-            Text(
-                text = "Build: ${buildInfo.buildTime}",
-                style = MaterialTheme.typography.bodySmall
-            )
+            // Section: Acerca de
+            SectionHeader(title = "Acerca de")
+            Card(
+                modifier = Modifier.fillMaxWidth(),
+                shape = MaterialTheme.shapes.large,
+                elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
+                colors = CardDefaults.cardColors(
+                    containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
+                )
+            ) {
+                Column(
+                    modifier = Modifier.padding(GastroSpacing.md),
+                    verticalArrangement = Arrangement.spacedBy(GastroSpacing.xs)
+                ) {
+                    Text(
+                        text = "Versión ${buildInfo.versionName} (${buildInfo.versionCode})",
+                        style = MaterialTheme.typography.bodySmall
+                    )
+                    Text(
+                        text = "Git: ${buildInfo.gitSha}",
+                        style = MaterialTheme.typography.bodySmall
+                    )
+                    Text(
+                        text = "Build: ${buildInfo.buildTime}",
+                        style = MaterialTheme.typography.bodySmall
+                    )
+                }
+            }
+
+            Spacer(Modifier.height(GastroSpacing.xl))
         }
     }
 

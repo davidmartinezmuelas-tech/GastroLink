@@ -1,17 +1,19 @@
 package tech.davidmartinezmuelas.gastrolink.ui.screens
 
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.ui.unit.dp
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.material3.Button
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Star
+import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material3.Card
-import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
@@ -25,7 +27,7 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.unit.dp
+import androidx.compose.ui.text.font.FontWeight
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
@@ -34,6 +36,10 @@ import tech.davidmartinezmuelas.gastrolink.ui.ExportShareHelper
 import tech.davidmartinezmuelas.gastrolink.ui.HistoryExportFormat
 import tech.davidmartinezmuelas.gastrolink.ui.HistoryExportResult
 import tech.davidmartinezmuelas.gastrolink.ui.OrderHistoryItemUi
+import tech.davidmartinezmuelas.gastrolink.ui.components.EmptyState
+import tech.davidmartinezmuelas.gastrolink.ui.components.KcalChip
+import tech.davidmartinezmuelas.gastrolink.ui.components.LoadingState
+import tech.davidmartinezmuelas.gastrolink.ui.theme.GastroSpacing
 
 @Composable
 fun OrderHistoryScreen(
@@ -66,72 +72,84 @@ fun OrderHistoryScreen(
     ) { innerPadding ->
         when {
             isLoading -> {
-                Box(
+                LoadingState(
+                    message = "Cargando historial...",
                     modifier = Modifier
                         .fillMaxSize()
-                        .padding(innerPadding),
-                    contentAlignment = Alignment.Center
-                ) {
-                    CircularProgressIndicator()
-                }
+                        .padding(innerPadding)
+                )
             }
             !errorMessage.isNullOrBlank() -> {
-                Column(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(innerPadding)
-                        .padding(16.dp),
-                    verticalArrangement = Arrangement.spacedBy(12.dp),
-                    horizontalAlignment = Alignment.CenterHorizontally
-                ) {
-                    Text(text = errorMessage)
-                    Button(onClick = onRefresh) { Text(text = "Reintentar") }
-                }
+                EmptyState(
+                    icon = Icons.Filled.Warning,
+                    title = "Error al cargar",
+                    subtitle = errorMessage,
+                    actionLabel = "Reintentar",
+                    onAction = onRefresh,
+                    modifier = Modifier.padding(innerPadding)
+                )
             }
             orders.isEmpty() -> {
-                Column(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(innerPadding)
-                        .padding(16.dp),
-                    verticalArrangement = Arrangement.Center,
-                    horizontalAlignment = Alignment.CenterHorizontally
-                ) {
-                    Text(
-                        text = "Todavía no hay pedidos guardados",
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                }
+                EmptyState(
+                    icon = Icons.Filled.Star,
+                    title = "Sin pedidos",
+                    subtitle = "Confirma tu primer pedido para verlo aquí",
+                    modifier = Modifier.padding(innerPadding)
+                )
             }
             else -> {
                 LazyColumn(
                     modifier = Modifier
                         .fillMaxSize()
                         .padding(innerPadding),
-                    verticalArrangement = Arrangement.spacedBy(10.dp)
+                    contentPadding = PaddingValues(GastroSpacing.md),
+                    verticalArrangement = Arrangement.spacedBy(GastroSpacing.sm)
                 ) {
                     items(orders, key = { it.id }) { order ->
                         Card(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(horizontal = 16.dp)
+                            modifier = Modifier.fillMaxWidth(),
+                            shape = MaterialTheme.shapes.large,
+                            elevation = CardDefaults.cardElevation(defaultElevation = 1.dp),
+                            colors = CardDefaults.cardColors(
+                                containerColor = MaterialTheme.colorScheme.surface
+                            )
                         ) {
-                            Column(
-                                modifier = Modifier.padding(12.dp),
-                                verticalArrangement = Arrangement.spacedBy(6.dp)
+                            androidx.compose.foundation.layout.Column(
+                                modifier = Modifier.padding(GastroSpacing.md),
+                                verticalArrangement = Arrangement.spacedBy(GastroSpacing.xs)
                             ) {
-                                Text(
-                                    text = formatDate(order.createdAt),
-                                    style = MaterialTheme.typography.titleSmall
-                                )
-                                Text(text = "Sucursal: ${order.branchName}")
-                                Text(text = "Platos: ${order.dishCount}")
-                                Text(text = "kcal totales: ${order.totalCalories}")
                                 Row(
                                     modifier = Modifier.fillMaxWidth(),
-                                    horizontalArrangement = Arrangement.End
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    horizontalArrangement = Arrangement.SpaceBetween
                                 ) {
-                                    Button(onClick = { onViewDetails(order.id) }) {
+                                    androidx.compose.foundation.layout.Column(
+                                        modifier = Modifier.weight(1f)
+                                    ) {
+                                        Text(
+                                            text = formatDate(order.createdAt),
+                                            style = MaterialTheme.typography.titleSmall,
+                                            fontWeight = FontWeight.Bold
+                                        )
+                                        Text(
+                                            text = order.branchName,
+                                            style = MaterialTheme.typography.bodySmall,
+                                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                                        )
+                                    }
+                                    KcalChip(kcal = order.totalCalories)
+                                }
+                                Row(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    Text(
+                                        text = "${order.dishCount} plato${if (order.dishCount != 1) "s" else ""}",
+                                        style = MaterialTheme.typography.labelSmall,
+                                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                        modifier = Modifier.weight(1f)
+                                    )
+                                    TextButton(onClick = { onViewDetails(order.id) }) {
                                         Text(text = "Ver detalles")
                                     }
                                 }

@@ -1,5 +1,6 @@
 package tech.davidmartinezmuelas.gastrolink.ui.screens
 
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -10,6 +11,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
@@ -21,9 +23,11 @@ import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import tech.davidmartinezmuelas.gastrolink.model.OrderMode
 import tech.davidmartinezmuelas.gastrolink.model.SavedProfile
+import tech.davidmartinezmuelas.gastrolink.ui.theme.GastroSpacing
 
 @Composable
 fun StartModeScreen(
@@ -47,21 +51,26 @@ fun StartModeScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(innerPadding)
-                .padding(horizontal = 20.dp, vertical = 16.dp),
-            verticalArrangement = Arrangement.spacedBy(12.dp)
+                .padding(horizontal = GastroSpacing.md, vertical = GastroSpacing.md),
+            verticalArrangement = Arrangement.spacedBy(GastroSpacing.md)
         ) {
-            Text(
-                text = "¿Cómo vas a pedir hoy?",
-                style = MaterialTheme.typography.headlineSmall,
-                color = MaterialTheme.colorScheme.onBackground
-            )
-            Text(
-                text = "Elige el modo de pedido para comenzar.",
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
-            )
+            // Branding block
+            Column(verticalArrangement = Arrangement.spacedBy(GastroSpacing.xs)) {
+                Text(
+                    text = "Bienvenido a GastroLink",
+                    style = MaterialTheme.typography.headlineMedium,
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.onBackground
+                )
+                Text(
+                    text = "Tu asistente de pedidos inteligente",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
 
             ModeCard(
+                icon = Icons.Filled.Person,
                 title = "Solitario",
                 description = "Pedido individual con carrito personal y seguimiento nutricional.",
                 isSelected = selectedMode == OrderMode.SOLO,
@@ -70,6 +79,7 @@ fun StartModeScreen(
             )
 
             ModeCard(
+                icon = Icons.Filled.Person,
                 title = "En grupo",
                 description = "Gestiona participantes, asigna cada plato y compara totales.",
                 isSelected = selectedMode == OrderMode.GROUP,
@@ -87,6 +97,77 @@ fun StartModeScreen(
 }
 
 @Composable
+private fun ModeCard(
+    icon: androidx.compose.ui.graphics.vector.ImageVector,
+    title: String,
+    description: String,
+    isSelected: Boolean,
+    buttonLabel: String,
+    onClick: () -> Unit
+) {
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        shape = MaterialTheme.shapes.large,
+        elevation = CardDefaults.cardElevation(defaultElevation = 1.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = if (isSelected) {
+                MaterialTheme.colorScheme.primaryContainer
+            } else {
+                MaterialTheme.colorScheme.surface
+            }
+        ),
+        border = if (isSelected) {
+            BorderStroke(width = 2.dp, color = MaterialTheme.colorScheme.primary)
+        } else {
+            BorderStroke(width = 2.dp, color = MaterialTheme.colorScheme.outlineVariant)
+        }
+    ) {
+        Column(
+            modifier = Modifier.padding(GastroSpacing.md),
+            verticalArrangement = Arrangement.spacedBy(GastroSpacing.sm)
+        ) {
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(GastroSpacing.sm)
+            ) {
+                Icon(
+                    imageVector = icon,
+                    contentDescription = null,
+                    modifier = Modifier.size(20.dp),
+                    tint = if (isSelected) {
+                        MaterialTheme.colorScheme.primary
+                    } else {
+                        MaterialTheme.colorScheme.onSurfaceVariant
+                    }
+                )
+                Text(
+                    text = title,
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.Bold,
+                    color = if (isSelected) {
+                        MaterialTheme.colorScheme.onPrimaryContainer
+                    } else {
+                        MaterialTheme.colorScheme.onSurface
+                    }
+                )
+            }
+            Text(
+                text = description,
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+            Button(
+                onClick = onClick,
+                modifier = Modifier.fillMaxWidth(),
+                shape = MaterialTheme.shapes.large
+            ) {
+                Text(text = buttonLabel)
+            }
+        }
+    }
+}
+
+@Composable
 private fun ProfileBanner(
     savedProfiles: List<SavedProfile>,
     hasProfileData: Boolean,
@@ -96,7 +177,7 @@ private fun ProfileBanner(
 
     Surface(
         modifier = Modifier.fillMaxWidth(),
-        shape = MaterialTheme.shapes.medium,
+        shape = MaterialTheme.shapes.large,
         color = if (hasSomething) {
             MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.6f)
         } else {
@@ -105,9 +186,9 @@ private fun ProfileBanner(
         tonalElevation = 0.dp
     ) {
         Row(
-            modifier = Modifier.padding(horizontal = 16.dp, vertical = 10.dp),
+            modifier = Modifier.padding(horizontal = GastroSpacing.md, vertical = GastroSpacing.sm),
             verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(12.dp)
+            horizontalArrangement = Arrangement.spacedBy(GastroSpacing.sm)
         ) {
             Icon(
                 imageVector = Icons.Filled.Person,
@@ -143,62 +224,13 @@ private fun ProfileBanner(
             TextButton(onClick = onManageProfiles) {
                 Text(
                     text = if (hasSomething) "Gestionar" else "Añadir",
-                    style = MaterialTheme.typography.labelMedium
+                    style = MaterialTheme.typography.labelMedium,
+                    color = if (hasSomething) {
+                        MaterialTheme.colorScheme.secondary
+                    } else {
+                        MaterialTheme.colorScheme.onSurfaceVariant
+                    }
                 )
-            }
-        }
-    }
-}
-
-@Composable
-private fun ModeCard(
-    title: String,
-    description: String,
-    isSelected: Boolean,
-    buttonLabel: String,
-    onClick: () -> Unit
-) {
-    Card(
-        modifier = Modifier.fillMaxWidth(),
-        colors = CardDefaults.cardColors(
-            containerColor = if (isSelected) {
-                MaterialTheme.colorScheme.primaryContainer
-            } else {
-                MaterialTheme.colorScheme.surface
-            }
-        ),
-        border = if (isSelected) {
-            androidx.compose.foundation.BorderStroke(
-                width = 1.5.dp,
-                color = MaterialTheme.colorScheme.primary
-            )
-        } else {
-            androidx.compose.foundation.BorderStroke(
-                width = 1.dp,
-                color = MaterialTheme.colorScheme.outlineVariant
-            )
-        }
-    ) {
-        Column(
-            modifier = Modifier.padding(20.dp),
-            verticalArrangement = Arrangement.spacedBy(8.dp)
-        ) {
-            Text(
-                text = title,
-                style = MaterialTheme.typography.titleMedium,
-                color = if (isSelected) {
-                    MaterialTheme.colorScheme.onPrimaryContainer
-                } else {
-                    MaterialTheme.colorScheme.onSurface
-                }
-            )
-            Text(
-                text = description,
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
-            )
-            Button(onClick = onClick) {
-                Text(text = buttonLabel)
             }
         }
     }

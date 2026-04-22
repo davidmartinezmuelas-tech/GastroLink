@@ -7,16 +7,22 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Info
+import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -24,8 +30,12 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import tech.davidmartinezmuelas.gastrolink.model.SavedProfile
+import tech.davidmartinezmuelas.gastrolink.ui.theme.GastroSpacing
+import tech.davidmartinezmuelas.gastrolink.ui.theme.NutritionCalories
+import tech.davidmartinezmuelas.gastrolink.ui.theme.PillShape
 
 @Composable
 fun NutritionModeScreen(
@@ -56,8 +66,8 @@ fun NutritionModeScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(innerPadding)
-                .padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(16.dp)
+                .padding(GastroSpacing.md),
+            verticalArrangement = Arrangement.spacedBy(GastroSpacing.md)
         ) {
             Text(
                 text = "¿Con qué nivel de detalle nutricional quieres pedir?",
@@ -65,43 +75,111 @@ fun NutritionModeScreen(
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
 
-            Card(modifier = Modifier.fillMaxWidth()) {
+            // Card 1: Sin datos de perfil
+            Card(
+                modifier = Modifier.fillMaxWidth(),
+                shape = MaterialTheme.shapes.large,
+                elevation = CardDefaults.cardElevation(defaultElevation = 1.dp),
+                colors = CardDefaults.cardColors(
+                    containerColor = MaterialTheme.colorScheme.surface
+                )
+            ) {
                 Column(
-                    modifier = Modifier.padding(16.dp),
-                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                    modifier = Modifier.padding(GastroSpacing.md),
+                    verticalArrangement = Arrangement.spacedBy(GastroSpacing.sm)
                 ) {
-                    Text(text = "Sin datos de perfil", style = MaterialTheme.typography.titleMedium)
-                    Text(
-                        text = "Muestra kcal y macros por plato y totales del carrito.",
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                    Button(onClick = onChooseWithoutProfile) {
+                    Row(
+                        horizontalArrangement = Arrangement.spacedBy(GastroSpacing.sm),
+                        verticalAlignment = Alignment.Top
+                    ) {
+                        Icon(
+                            imageVector = Icons.Filled.Info,
+                            contentDescription = null,
+                            modifier = Modifier.size(20.dp),
+                            tint = MaterialTheme.colorScheme.secondary
+                        )
+                        Column(verticalArrangement = Arrangement.spacedBy(GastroSpacing.xs)) {
+                            Text(
+                                text = "Sin datos de perfil",
+                                style = MaterialTheme.typography.titleMedium,
+                                fontWeight = FontWeight.Bold
+                            )
+                            Text(
+                                text = "Muestra kcal y macros por plato y totales del carrito.",
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                        }
+                    }
+                    Button(
+                        onClick = onChooseWithoutProfile,
+                        modifier = Modifier.fillMaxWidth(),
+                        shape = MaterialTheme.shapes.large
+                    ) {
                         Text(text = "Continuar")
                     }
                 }
             }
 
-            Card(modifier = Modifier.fillMaxWidth()) {
+            // Card 2: Con perfil nutricional
+            Card(
+                modifier = Modifier.fillMaxWidth(),
+                shape = MaterialTheme.shapes.large,
+                elevation = CardDefaults.cardElevation(defaultElevation = 1.dp),
+                colors = CardDefaults.cardColors(
+                    containerColor = if (isPremiumEnabled) {
+                        MaterialTheme.colorScheme.surface
+                    } else {
+                        MaterialTheme.colorScheme.surfaceVariant
+                    }
+                )
+            ) {
                 Column(
-                    modifier = Modifier.padding(16.dp),
-                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                    modifier = Modifier.padding(GastroSpacing.md),
+                    verticalArrangement = Arrangement.spacedBy(GastroSpacing.sm)
                 ) {
-                    Text(
-                        text = "Con perfil nutricional",
-                        style = MaterialTheme.typography.titleMedium
-                    )
-                    Text(
-                        text = "Recibe recomendaciones personalizadas según tu objetivo y perfil.",
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                    if (!isPremiumEnabled) {
-                        Text(
-                            text = "Requiere plan Premium",
-                            style = MaterialTheme.typography.labelMedium,
-                            color = MaterialTheme.colorScheme.primary
+                    Row(
+                        horizontalArrangement = Arrangement.spacedBy(GastroSpacing.sm),
+                        verticalAlignment = Alignment.Top
+                    ) {
+                        Icon(
+                            imageVector = Icons.Filled.Star,
+                            contentDescription = null,
+                            modifier = Modifier.size(20.dp),
+                            tint = if (isPremiumEnabled) {
+                                NutritionCalories
+                            } else {
+                                MaterialTheme.colorScheme.onSurfaceVariant
+                            }
                         )
+                        Column(verticalArrangement = Arrangement.spacedBy(GastroSpacing.xs)) {
+                            Text(
+                                text = "Con perfil nutricional",
+                                style = MaterialTheme.typography.titleMedium,
+                                fontWeight = FontWeight.Bold
+                            )
+                            Text(
+                                text = "Recibe recomendaciones personalizadas según tu objetivo y perfil.",
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                            if (!isPremiumEnabled) {
+                                Surface(
+                                    shape = PillShape,
+                                    color = MaterialTheme.colorScheme.tertiaryContainer
+                                ) {
+                                    Text(
+                                        text = "Requiere Premium",
+                                        style = MaterialTheme.typography.labelSmall,
+                                        color = MaterialTheme.colorScheme.onTertiaryContainer,
+                                        modifier = Modifier.padding(
+                                            horizontal = GastroSpacing.sm,
+                                            vertical = GastroSpacing.xs
+                                        )
+                                    )
+                                }
+                            }
+                        }
                     }
                     Button(
                         onClick = {
@@ -113,7 +191,9 @@ fun NutritionModeScreen(
                             } else {
                                 onChooseWithProfile()
                             }
-                        }
+                        },
+                        modifier = Modifier.fillMaxWidth(),
+                        shape = MaterialTheme.shapes.large
                     ) {
                         Text(text = "Continuar")
                     }
@@ -171,7 +251,7 @@ fun NutritionModeScreen(
                                 .clickable { selectedProfileId.value = profile.id }
                                 .padding(vertical = 4.dp),
                             verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.spacedBy(8.dp)
+                            horizontalArrangement = Arrangement.spacedBy(GastroSpacing.sm)
                         ) {
                             RadioButton(
                                 selected = selectedProfileId.value == profile.id,
@@ -204,7 +284,7 @@ fun NutritionModeScreen(
                                 .clickable { selectedProfileId.value = "new" }
                                 .padding(vertical = 4.dp),
                             verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.spacedBy(8.dp)
+                            horizontalArrangement = Arrangement.spacedBy(GastroSpacing.sm)
                         ) {
                             RadioButton(
                                 selected = selectedProfileId.value == "new",
