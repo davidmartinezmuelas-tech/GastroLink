@@ -38,6 +38,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
 import tech.davidmartinezmuelas.gastrolink.model.ChatMessage
+import tech.davidmartinezmuelas.gastrolink.ui.theme.GastroSpacing
+import tech.davidmartinezmuelas.gastrolink.ui.theme.PillShape
 
 @Composable
 fun ChatScreen(
@@ -86,18 +88,19 @@ fun ChatScreen(
                 ) {
                     Column(
                         horizontalAlignment = Alignment.CenterHorizontally,
-                        verticalArrangement = Arrangement.spacedBy(8.dp)
+                        verticalArrangement = Arrangement.spacedBy(GastroSpacing.sm)
                     ) {
                         Text(
-                            text = "Hola! Soy tu asistente nutricional.",
+                            text = "¡Hola! Soy tu asistente nutricional.",
                             style = MaterialTheme.typography.titleMedium,
+                            fontWeight = androidx.compose.ui.text.font.FontWeight.Bold,
                             color = MaterialTheme.colorScheme.onSurface
                         )
                         Text(
-                            text = "Preguntame que te apetece comer y te recomendare platos del menu segun tu perfil.",
+                            text = "Pregúntame qué te apetece comer y te recomendaré platos del menú según tu perfil.",
                             style = MaterialTheme.typography.bodyMedium,
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
-                            modifier = Modifier.padding(horizontal = 32.dp),
+                            modifier = Modifier.padding(horizontal = GastroSpacing.xl),
                             textAlign = androidx.compose.ui.text.style.TextAlign.Center
                         )
                     }
@@ -108,9 +111,9 @@ fun ChatScreen(
                     modifier = Modifier
                         .weight(1f)
                         .fillMaxWidth()
-                        .padding(horizontal = 12.dp),
-                    verticalArrangement = Arrangement.spacedBy(8.dp),
-                    contentPadding = androidx.compose.foundation.layout.PaddingValues(vertical = 12.dp)
+                        .padding(horizontal = GastroSpacing.md),
+                    verticalArrangement = Arrangement.spacedBy(GastroSpacing.sm),
+                    contentPadding = androidx.compose.foundation.layout.PaddingValues(vertical = GastroSpacing.md)
                 ) {
                     items(messages) { message ->
                         ChatBubble(message = message)
@@ -136,9 +139,9 @@ fun ChatScreen(
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(horizontal = 12.dp, vertical = 8.dp),
+                    .padding(horizontal = GastroSpacing.md, vertical = GastroSpacing.sm),
                 verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
+                horizontalArrangement = Arrangement.spacedBy(GastroSpacing.sm)
             ) {
                 OutlinedTextField(
                     value = inputText,
@@ -154,7 +157,7 @@ fun ChatScreen(
                             inputText = ""
                         }
                     }),
-                    shape = RoundedCornerShape(20.dp)
+                    shape = PillShape
                 )
                 IconButton(
                     onClick = {
