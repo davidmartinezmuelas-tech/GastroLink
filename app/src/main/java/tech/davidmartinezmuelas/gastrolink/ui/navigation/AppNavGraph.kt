@@ -1,5 +1,13 @@
 package tech.davidmartinezmuelas.gastrolink.ui.navigation
 
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.slideInHorizontally
+import androidx.compose.animation.slideInVertically
+import androidx.compose.animation.slideOutHorizontally
+import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
@@ -15,25 +23,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.unit.dp
 import androidx.navigation.compose.currentBackStackEntryAsState
-// Navigation flow:
-//
-//   START_MODE
-//     ├─ Solo  ──► NUTRITION_MODE
-//     └─ Group ──► NUTRITION_MODE
-//
-//   NUTRITION_MODE
-//     ├─ WithoutProfile ──► BRANCH ──► MENU ──► CART ──► SUMMARY
-//     └─ WithProfile    ──► PROFILE ──► BRANCH ──► MENU ──► CART ──► SUMMARY
-//
-//   SUMMARY
-//     └─ confirmOrder ──► HISTORY (pops entire order flow back to START_MODE)
-//
-//   HISTORY ──► DETAIL/{orderId}
-//   HISTORY ──► STATS
-//
-//   Any screen ──► SETTINGS ──► PLANS
-//   SETTINGS ──► HISTORY
-//   SETTINGS ── navigateStart ──► START_MODE (clears full back stack)
 import androidx.compose.ui.Modifier
 import androidx.navigation.NavType
 import androidx.navigation.NavHostController
@@ -75,7 +64,11 @@ fun AppNavGraph(
         NavHost(
             navController = navController,
             startDestination = AppRoute.START_MODE,
-            modifier = Modifier.fillMaxSize()
+            modifier = Modifier.fillMaxSize(),
+            enterTransition    = { slideInHorizontally(tween(300)) { it } + fadeIn(tween(300)) },
+            exitTransition     = { slideOutHorizontally(tween(300)) { -it } + fadeOut(tween(300)) },
+            popEnterTransition = { slideInHorizontally(tween(300)) { -it } + fadeIn(tween(300)) },
+            popExitTransition  = { slideOutHorizontally(tween(300)) { it } + fadeOut(tween(300)) },
         ) {
         composable(AppRoute.START_MODE) {
             StartModeScreen(
@@ -328,14 +321,20 @@ fun AppNavGraph(
         }
     }
 
-        if (showChatFab) {
+        AnimatedVisibility(
+            visible = showChatFab,
+            enter = fadeIn(animationSpec = androidx.compose.animation.core.tween(200)) +
+                    slideInVertically(animationSpec = androidx.compose.animation.core.tween(200)) { it / 2 },
+            exit = fadeOut(animationSpec = androidx.compose.animation.core.tween(150)) +
+                   slideOutVertically(animationSpec = androidx.compose.animation.core.tween(150)) { it / 2 },
+            modifier = Modifier
+                .align(Alignment.BottomEnd)
+                .padding(16.dp)
+        ) {
             ExtendedFloatingActionButton(
                 onClick = { navController.navigate(AppRoute.CHAT) },
                 icon = { Icon(Icons.Filled.Edit, contentDescription = null) },
-                text = { Text("Asistente IA") },
-                modifier = Modifier
-                    .align(Alignment.BottomEnd)
-                    .padding(16.dp)
+                text = { Text("Asistente IA") }
             )
         }
     }

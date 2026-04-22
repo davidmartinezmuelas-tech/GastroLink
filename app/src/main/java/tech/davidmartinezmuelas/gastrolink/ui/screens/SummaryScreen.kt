@@ -1,29 +1,44 @@
 package tech.davidmartinezmuelas.gastrolink.ui.screens
 
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import tech.davidmartinezmuelas.gastrolink.domain.RecommendationSource
 import tech.davidmartinezmuelas.gastrolink.model.NutritionMode
 import tech.davidmartinezmuelas.gastrolink.model.NutritionTotals
 import tech.davidmartinezmuelas.gastrolink.model.Participant
+import tech.davidmartinezmuelas.gastrolink.ui.components.KcalChip
+import tech.davidmartinezmuelas.gastrolink.ui.components.MacroPillsRow
+import tech.davidmartinezmuelas.gastrolink.ui.components.NutritionStatGrid
+import tech.davidmartinezmuelas.gastrolink.ui.components.SectionHeader
+import tech.davidmartinezmuelas.gastrolink.ui.theme.GastroSpacing
+import tech.davidmartinezmuelas.gastrolink.ui.theme.PillShape
 
 @Composable
 fun SummaryScreen(
@@ -53,83 +68,64 @@ fun SummaryScreen(
         LazyColumn(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(innerPadding)
-                .padding(horizontal = 16.dp),
-            verticalArrangement = Arrangement.spacedBy(12.dp)
+                .padding(innerPadding),
+            contentPadding = androidx.compose.foundation.layout.PaddingValues(
+                horizontal = GastroSpacing.md,
+                vertical = GastroSpacing.md
+            ),
+            verticalArrangement = Arrangement.spacedBy(GastroSpacing.lg)
         ) {
             item {
-                Card(
-                    modifier = Modifier.fillMaxWidth().padding(top = 16.dp),
-                    colors = CardDefaults.cardColors(
-                        containerColor = MaterialTheme.colorScheme.primaryContainer
-                    )
-                ) {
-                    Column(
-                        modifier = Modifier.padding(16.dp),
-                        verticalArrangement = Arrangement.spacedBy(12.dp)
-                    ) {
-                        Text(
-                            text = "Totales nutricionales",
-                            style = MaterialTheme.typography.titleMedium,
-                            color = MaterialTheme.colorScheme.onPrimaryContainer
-                        )
-                        HorizontalDivider(color = MaterialTheme.colorScheme.outline.copy(alpha = 0.3f))
-                        // Grid 2×2 de macros
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.SpaceEvenly
-                        ) {
-                            NutritionStat(
-                                label = "Calorías",
-                                value = "${totals.kcal}",
-                                unit = "kcal",
-                                highlight = true
-                            )
-                            NutritionStat(label = "Proteína", value = "${totals.proteinG}", unit = "g")
-                        }
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.SpaceEvenly
-                        ) {
-                            NutritionStat(label = "Carbohidratos", value = "${totals.carbsG}", unit = "g")
-                            NutritionStat(label = "Grasa", value = "${totals.fatG}", unit = "g")
-                        }
-                    }
-                }
+                SectionHeader(title = "Totales nutricionales")
+            }
+            item {
+                NutritionStatGrid(
+                    kcal = totals.kcal,
+                    proteinG = totals.proteinG,
+                    carbsG = totals.carbsG,
+                    fatG = totals.fatG
+                )
             }
 
             if (totalsByParticipant.isNotEmpty()) {
                 item {
-                    Text(
-                        text = "Por participante",
-                        style = MaterialTheme.typography.titleSmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
+                    SectionHeader(title = "Por participante")
                 }
 
                 val orderedEntries = participants
                     .mapNotNull { p -> totalsByParticipant[p.id]?.let { p.id to it } }
                     .ifEmpty { totalsByParticipant.entries.map { it.key to it.value } }
 
-                items(orderedEntries, key = { it.first }) { entry ->
-                    val label = participantNames[entry.first] ?: entry.first
-                    val participantTotals = entry.second
-                    Card(modifier = Modifier.fillMaxWidth()) {
-                        Row(
-                            modifier = Modifier.fillMaxWidth().padding(12.dp),
-                            horizontalArrangement = Arrangement.SpaceBetween,
-                            verticalAlignment = Alignment.CenterVertically
+                items(orderedEntries, key = { it.first }) { (id, pTotals) ->
+                    val label = participantNames[id] ?: id
+                    Card(
+                        modifier = Modifier.fillMaxWidth(),
+                        shape = MaterialTheme.shapes.large,
+                        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+                        elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
+                    ) {
+                        Column(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(GastroSpacing.md),
+                            verticalArrangement = Arrangement.spacedBy(GastroSpacing.sm)
                         ) {
-                            Text(text = label, style = MaterialTheme.typography.titleSmall)
-                            Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                                Text(
-                                    text = "${participantTotals.kcal} kcal",
-                                    style = MaterialTheme.typography.bodySmall,
-                                    color = MaterialTheme.colorScheme.primary
+                            Text(
+                                text = label,
+                                style = MaterialTheme.typography.titleSmall,
+                                fontWeight = FontWeight.Bold,
+                                color = MaterialTheme.colorScheme.onSurface
+                            )
+                            Row(
+                                horizontalArrangement = Arrangement.spacedBy(GastroSpacing.sm),
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                KcalChip(kcal = pTotals.kcal)
+                                MacroPillsRow(
+                                    proteinG = pTotals.proteinG,
+                                    carbsG = pTotals.carbsG,
+                                    fatG = pTotals.fatG
                                 )
-                                Text(text = "P ${participantTotals.proteinG}g", style = MaterialTheme.typography.bodySmall)
-                                Text(text = "C ${participantTotals.carbsG}g", style = MaterialTheme.typography.bodySmall)
-                                Text(text = "G ${participantTotals.fatG}g", style = MaterialTheme.typography.bodySmall)
                             }
                         }
                     }
@@ -138,51 +134,62 @@ fun SummaryScreen(
 
             if (nutritionMode == NutritionMode.WITH_PROFILE) {
                 item {
-                    Card(modifier = Modifier.fillMaxWidth()) {
+                    SectionHeader(title = "Recomendaciones")
+                }
+                item {
+                    Card(
+                        modifier = Modifier.fillMaxWidth(),
+                        shape = MaterialTheme.shapes.large,
+                        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+                        elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
+                    ) {
                         Column(
-                            modifier = Modifier.padding(16.dp),
-                            verticalArrangement = Arrangement.spacedBy(8.dp)
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(GastroSpacing.md),
+                            verticalArrangement = Arrangement.spacedBy(GastroSpacing.sm)
                         ) {
-                            Row(
-                                modifier = Modifier.fillMaxWidth(),
-                                horizontalArrangement = Arrangement.SpaceBetween,
-                                verticalAlignment = Alignment.CenterVertically
-                            ) {
-                                Text(
-                                    text = "Recomendaciones",
-                                    style = MaterialTheme.typography.titleMedium
-                                )
-                                val sourceLabel = when (recommendationSource) {
-                                    RecommendationSource.AI -> "IA"
-                                    RecommendationSource.LOCAL_RULES -> "Reglas locales"
-                                    RecommendationSource.NONE -> null
-                                }
-                                if (sourceLabel != null) {
+                            val sourceLabel = when (recommendationSource) {
+                                RecommendationSource.AI -> "IA"
+                                RecommendationSource.LOCAL_RULES -> "Reglas locales"
+                                RecommendationSource.NONE -> null
+                            }
+                            if (sourceLabel != null) {
+                                Surface(
+                                    shape = PillShape,
+                                    color = MaterialTheme.colorScheme.tertiaryContainer
+                                ) {
                                     Text(
                                         text = sourceLabel,
                                         style = MaterialTheme.typography.labelSmall,
-                                        color = MaterialTheme.colorScheme.tertiary
+                                        color = MaterialTheme.colorScheme.onTertiaryContainer,
+                                        fontWeight = FontWeight.Bold,
+                                        modifier = Modifier.padding(horizontal = 10.dp, vertical = 4.dp)
                                     )
                                 }
                             }
-                            HorizontalDivider()
+
+                            HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
+
                             when {
                                 isRecommendationLoading -> {
                                     Row(
-                                        horizontalArrangement = Arrangement.spacedBy(12.dp),
+                                        horizontalArrangement = Arrangement.spacedBy(GastroSpacing.md),
                                         verticalAlignment = Alignment.CenterVertically
                                     ) {
-                                        CircularProgressIndicator()
-                                        Text(text = "Generando recomendación...")
+                                        CircularProgressIndicator(
+                                            modifier = Modifier.size(20.dp),
+                                            strokeWidth = 2.dp,
+                                            color = MaterialTheme.colorScheme.primary
+                                        )
+                                        Text(
+                                            text = "Generando recomendación...",
+                                            style = MaterialTheme.typography.bodyMedium,
+                                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                                        )
                                     }
                                 }
-                                recommendationSource == RecommendationSource.NONE -> {
-                                    Text(
-                                        text = "Sin recomendación disponible para este perfil",
-                                        style = MaterialTheme.typography.bodyMedium,
-                                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                                    )
-                                }
+                                recommendationSource == RecommendationSource.NONE ||
                                 recommendations.isEmpty() -> {
                                     Text(
                                         text = "No se generaron sugerencias para este pedido",
@@ -192,10 +199,22 @@ fun SummaryScreen(
                                 }
                                 else -> {
                                     recommendations.forEach { message ->
-                                        Text(
-                                            text = "• $message",
-                                            style = MaterialTheme.typography.bodyMedium
-                                        )
+                                        Row(
+                                            horizontalArrangement = Arrangement.spacedBy(GastroSpacing.sm),
+                                            verticalAlignment = Alignment.Top
+                                        ) {
+                                            Text(
+                                                text = "•",
+                                                style = MaterialTheme.typography.bodyMedium,
+                                                color = MaterialTheme.colorScheme.primary,
+                                                fontWeight = FontWeight.Bold
+                                            )
+                                            Text(
+                                                text = message,
+                                                style = MaterialTheme.typography.bodyMedium,
+                                                color = MaterialTheme.colorScheme.onSurface
+                                            )
+                                        }
                                     }
                                 }
                             }
@@ -205,56 +224,34 @@ fun SummaryScreen(
             }
 
             item {
-                Row(
+                Spacer(Modifier.height(GastroSpacing.sm))
+                Button(
+                    onClick = onConfirmOrder,
+                    enabled = !isSavingOrder,
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(vertical = 8.dp),
-                    horizontalArrangement = Arrangement.End
+                        .height(52.dp),
+                    shape = MaterialTheme.shapes.large,
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = MaterialTheme.colorScheme.primary
+                    )
                 ) {
-                    Button(onClick = onConfirmOrder, enabled = !isSavingOrder) {
-                        Text(text = if (isSavingOrder) "Guardando..." else "Confirmar pedido")
+                    if (isSavingOrder) {
+                        CircularProgressIndicator(
+                            modifier = Modifier.size(20.dp),
+                            strokeWidth = 2.dp,
+                            color = MaterialTheme.colorScheme.onPrimary
+                        )
+                    } else {
+                        Text(
+                            text = "Confirmar pedido",
+                            style = MaterialTheme.typography.labelLarge,
+                            fontWeight = FontWeight.Bold
+                        )
                     }
                 }
+                Spacer(Modifier.height(GastroSpacing.xl))
             }
         }
-    }
-}
-
-@Composable
-private fun NutritionStat(
-    label: String,
-    value: String,
-    unit: String,
-    highlight: Boolean = false
-) {
-    Column(
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.spacedBy(2.dp),
-        modifier = Modifier.padding(horizontal = 8.dp)
-    ) {
-        Row(
-            verticalAlignment = Alignment.Bottom,
-            horizontalArrangement = Arrangement.spacedBy(2.dp)
-        ) {
-            Text(
-                text = value,
-                style = MaterialTheme.typography.headlineSmall,
-                color = if (highlight) {
-                    MaterialTheme.colorScheme.onPrimaryContainer
-                } else {
-                    MaterialTheme.colorScheme.onPrimaryContainer
-                }
-            )
-            Text(
-                text = unit,
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.7f)
-            )
-        }
-        Text(
-            text = label,
-            style = MaterialTheme.typography.labelSmall,
-            color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.7f)
-        )
     }
 }
